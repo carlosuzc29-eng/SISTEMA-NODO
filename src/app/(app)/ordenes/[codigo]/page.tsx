@@ -14,9 +14,7 @@ import {
   Truck,
   FileText,
   Clock,
-  Printer,
   MessageSquare,
-  Sparkles,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -44,28 +42,28 @@ export default async function OrdenDetallePage({ params }: OrdenDetallePageProps
   const infoEstado = estadoBadge[orden.estado] || estadoBadge.recibida;
 
   return (
-    <div className="space-y-6 animate-in fade-in-50 duration-300 pb-16">
+    <div className="space-y-6 pb-16">
       {/* Botón Volver y Encabezado de la Orden */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/60">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" size="sm" className="h-9 w-9 p-0 rounded-xl">
+          <Button asChild variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg">
             <Link href="/ordenes">
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono font-bold text-2xl text-foreground">
+              <span className="font-mono font-bold text-2xl text-foreground tracking-tight">
                 {orden.codigo}
               </span>
               <span
-                className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${infoEstado.className}`}
+                className={`text-[11px] font-mono px-2 py-0.5 rounded-md font-medium ${infoEstado.className}`}
               >
                 {infoEstado.label}
               </span>
               <OtSemaphore fechaEntrega={orden.fecha_entrega} />
             </div>
-            <h1 className="text-xl font-bold text-foreground mt-1">
+            <h1 className="text-lg font-semibold text-foreground mt-0.5">
               {orden.titulo}
             </h1>
           </div>
@@ -73,18 +71,18 @@ export default async function OrdenDetallePage({ params }: OrdenDetallePageProps
 
         <div className="flex items-center gap-2">
           {orden.estado === "lista_entrega" && (
-            <Button asChild size="sm" className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+            <Button asChild size="sm" className="rounded-lg bg-[var(--success)] hover:opacity-90 text-[var(--success-foreground)] font-medium text-xs shadow-xs">
               <Link href="/entregas">
-                <Truck className="h-4 w-4 mr-1.5" />
+                <Truck className="h-3.5 w-3.5 mr-1.5" />
                 <span>Marcar como Entregada</span>
               </Link>
             </Button>
           )}
 
           {/* Enlace al Estudio de Mockup 3D */}
-          <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold gap-1.5 border-violet-300 dark:border-violet-800 bg-violet-50/60 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 hover:bg-violet-100">
+          <Button asChild variant="outline" size="sm" className="rounded-lg text-xs font-mono font-medium gap-1.5 border-primary/30 bg-primary/10 text-primary hover:bg-primary/20">
             <Link href={`/ordenes/${orden.codigo}/mockup`}>
-              <Box className="h-4 w-4 text-violet-600" />
+              <Box className="h-3.5 w-3.5" />
               <span>Mockup 3D y Aprobación</span>
             </Link>
           </Button>

@@ -11,6 +11,7 @@ interface PinKeypadProps {
   onSubmit?: () => void;
   maxLength?: number;
   disabled?: boolean;
+  hasError?: boolean;
 }
 
 export function PinKeypad({
@@ -19,6 +20,7 @@ export function PinKeypad({
   onSubmit,
   maxLength = 6,
   disabled = false,
+  hasError = false,
 }: PinKeypadProps) {
   const handleDigit = (digit: string) => {
     if (disabled || value.length >= maxLength) return;
@@ -64,21 +66,28 @@ export function PinKeypad({
 
   return (
     <div className="w-full max-w-xs mx-auto flex flex-col items-center gap-4">
-      {/* Indicadores de PIN (6 puntos) */}
-      <div className="flex justify-center items-center gap-3 py-2">
+      {/* Indicadores de PIN (6 puntos) con animación shake en caso de error */}
+      <div
+        className={cn(
+          "flex justify-center items-center gap-3 py-2",
+          hasError && "animate-pin-shake"
+        )}
+      >
         {Array.from({ length: maxLength }).map((_, idx) => {
           const isFilled = idx < value.length;
-          const isCurrent = idx === value.length;
+          const isCurrent = idx === value.length && !hasError;
           return (
             <div
               key={idx}
               className={cn(
-                "h-4 w-4 rounded-full border-2 transition-all duration-200",
-                isFilled
-                  ? "bg-primary border-primary scale-110 shadow-sm shadow-primary/40"
+                "h-3.5 w-3.5 rounded-full border transition-[transform,background-color,border-color] duration-150 ease-[var(--ease-out)]",
+                hasError
+                  ? "border-destructive/80 bg-destructive/40"
+                  : isFilled
+                  ? "bg-primary border-primary scale-110 shadow-sm shadow-primary/30"
                   : isCurrent
-                  ? "border-primary/70 bg-primary/10 animate-pulse"
-                  : "border-muted-foreground/30 bg-muted/40"
+                  ? "border-primary/80 bg-primary/15 ring-2 ring-primary/25"
+                  : "border-border/80 bg-muted/40"
               )}
             />
           );
@@ -86,7 +95,7 @@ export function PinKeypad({
       </div>
 
       {/* Teclado numérico táctil */}
-      <div className="grid grid-cols-3 gap-2.5 w-full">
+      <div className="grid grid-cols-3 gap-2 w-full">
         {digits.map((num) => (
           <Button
             key={num}
@@ -94,7 +103,7 @@ export function PinKeypad({
             variant="outline"
             disabled={disabled}
             onClick={() => handleDigit(num)}
-            className="h-14 sm:h-16 text-2xl font-semibold rounded-2xl border-border/80 hover:border-primary/50 hover:bg-primary/5 active:scale-95 transition-all shadow-sm"
+            className="h-14 sm:h-15 text-2xl font-mono font-medium rounded-xl border-border/70 hover:border-border hover:bg-muted/50 active:scale-[0.96] transition-[transform,background-color,border-color] duration-100 ease-[var(--ease-out)] shadow-xs select-none"
           >
             {num}
           </Button>
@@ -107,9 +116,9 @@ export function PinKeypad({
           disabled={disabled || value.length === 0}
           onClick={handleClear}
           title="Borrar todo"
-          className="h-14 sm:h-16 text-sm font-medium rounded-2xl text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+          className="h-14 sm:h-15 text-xs font-mono font-medium uppercase tracking-wider rounded-xl text-muted-foreground hover:text-foreground active:scale-[0.96] transition-[transform,background-color] duration-100 ease-[var(--ease-out)]"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
         </Button>
 
         {/* Dígito 0 */}
@@ -118,7 +127,7 @@ export function PinKeypad({
           variant="outline"
           disabled={disabled}
           onClick={() => handleDigit("0")}
-          className="h-14 sm:h-16 text-2xl font-semibold rounded-2xl border-border/80 hover:border-primary/50 hover:bg-primary/5 active:scale-95 transition-all shadow-sm"
+          className="h-14 sm:h-15 text-2xl font-mono font-medium rounded-xl border-border/70 hover:border-border hover:bg-muted/50 active:scale-[0.96] transition-[transform,background-color,border-color] duration-100 ease-[var(--ease-out)] shadow-xs select-none"
         >
           0
         </Button>
@@ -130,9 +139,9 @@ export function PinKeypad({
           disabled={disabled || value.length === 0}
           onClick={handleBackspace}
           title="Borrar dígito"
-          className="h-14 sm:h-16 rounded-2xl text-muted-foreground hover:text-foreground active:scale-95 transition-all"
+          className="h-14 sm:h-15 rounded-xl text-muted-foreground hover:text-foreground active:scale-[0.96] transition-[transform,background-color] duration-100 ease-[var(--ease-out)]"
         >
-          <Delete className="h-6 w-6" />
+          <Delete className="h-5 w-5" />
         </Button>
       </div>
     </div>

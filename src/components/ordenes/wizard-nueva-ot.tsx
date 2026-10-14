@@ -151,12 +151,20 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
   const tipoSeleccionado = tiposTrabajo.find((t) => t.id === tipoTrabajoId);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-5">
+      {/* Barra de progreso continuo */}
+      <div className="relative h-1 w-full bg-border/60 rounded-full overflow-hidden">
+        <div
+          className="absolute inset-y-0 left-0 w-full bg-primary origin-left transition-transform duration-250 ease-[var(--ease-out)]"
+          style={{ transform: `scaleX(${paso === 1 ? 0.33 : paso === 2 ? 0.66 : 1})` }}
+        />
+      </div>
+
       {/* Indicador de Pasos del Asistente */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2.5">
         {[
           { num: 1, label: "Cliente", desc: "Selección o registro" },
-          { num: 2, label: "Especificaciones", desc: "Ficha técnica del producto" },
+          { num: 2, label: "Especificaciones", desc: "Ficha técnica" },
           { num: 3, label: "Ruta y Entrega", desc: "Estaciones y plazos" },
         ].map((p) => {
           const isActive = paso === p.num;
@@ -166,27 +174,27 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
             <div
               key={p.num}
               onClick={() => isDone && setPaso(p.num as 1 | 2 | 3)}
-              className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
+              className={`p-3 rounded-xl border transition-[border-color,background-color] duration-150 ease-[var(--ease-out)] cursor-pointer ${
                 isActive
-                  ? "bg-card border-primary/60 shadow-sm ring-1 ring-primary/20"
+                  ? "bg-card border-primary/60 shadow-xs ring-1 ring-primary/20"
                   : isDone
-                  ? "bg-card/60 border-emerald-500/30 hover:border-emerald-500/60"
-                  : "bg-muted/30 border-border/60 opacity-60 pointer-events-none"
+                  ? "bg-card/60 border-[var(--success)]/40 hover:border-[var(--success)]/70"
+                  : "bg-muted/20 border-border/60 opacity-60 pointer-events-none"
               }`}
             >
               <div className="flex items-center gap-2">
                 <span
-                  className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  className={`h-5 w-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold ${
                     isDone
-                      ? "bg-emerald-500 text-white"
+                      ? "bg-[var(--success)] text-[var(--success-foreground)]"
                       : isActive
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  {isDone ? <Check className="h-3.5 w-3.5" /> : p.num}
+                  {isDone ? <Check className="h-3 w-3 stroke-[2.5]" /> : p.num}
                 </span>
-                <span className="font-semibold text-xs text-foreground">
+                <span className="font-medium text-xs text-foreground font-mono">
                   {p.label}
                 </span>
               </div>
@@ -198,7 +206,7 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
         })}
       </div>
 
-      <Card className="border-border/80 shadow-md backdrop-blur-sm bg-card/95">
+      <Card className="border-border/80 shadow-xs backdrop-blur-sm bg-card/95">
         {/* PASO 1: CLIENTE */}
         {paso === 1 && (
           <>

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Users, Plus, Phone, Mail, Building, FileSpreadsheet, ChevronRight, X, Loader2 } from "lucide-react";
+import { Users, Plus, Phone, Mail, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ClientesClientViewProps {
@@ -81,16 +81,20 @@ export function ClientesClientView({ clientes, ordenes }: ClientesClientViewProp
       </div>
 
       {/* Grid de Clientes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
         {clientes.map((c) => {
           const ordenesCliente = ordenes.filter((o) => o.cliente_id === c.id);
 
           return (
-            <Card key={c.id} className="border-border/80 shadow-sm hover:border-primary/40 transition-all flex flex-col justify-between">
-              <CardHeader className="pb-3">
+            <Card
+              key={c.id}
+              variant="interactive"
+              className="flex flex-col justify-between shadow-xs"
+            >
+              <CardHeader className="pb-2.5">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <CardTitle className="text-base font-bold text-foreground">
+                    <CardTitle className="text-sm font-semibold text-foreground">
                       {c.empresa || c.nombre}
                     </CardTitle>
                     {c.empresa && (
@@ -99,13 +103,13 @@ export function ClientesClientView({ clientes, ordenes }: ClientesClientViewProp
                       </CardDescription>
                     )}
                   </div>
-                  <Badge variant="secondary" className="font-mono text-xs tabular-nums">
+                  <Badge variant="outline" className="font-mono text-[11px] tabular-nums">
                     {ordenesCliente.length} {ordenesCliente.length === 1 ? "OT" : "OTs"}
                   </Badge>
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-3 pt-0 text-xs">
+              <CardContent className="space-y-2.5 pt-0 text-xs">
                 {c.telefono && (
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Phone className="h-3.5 w-3.5 text-primary" />
@@ -119,14 +123,14 @@ export function ClientesClientView({ clientes, ordenes }: ClientesClientViewProp
                   </div>
                 )}
                 {c.notas && (
-                  <p className="text-muted-foreground/80 bg-muted/30 p-2.5 rounded-xl border border-border/60 leading-relaxed text-[11px]">
+                  <p className="text-muted-foreground/80 bg-muted/40 p-2 rounded-lg border border-border/50 leading-relaxed text-[11px]">
                     {c.notas}
                   </p>
                 )}
 
                 {/* Últimas Órdenes */}
-                <div className="pt-2 border-t border-border/60">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                <div className="pt-2 border-t border-border/50">
+                  <span className="label-caps text-muted-foreground block mb-1.5">
                     Historial de Trabajos
                   </span>
                   {ordenesCliente.length > 0 ? (
@@ -135,7 +139,7 @@ export function ClientesClientView({ clientes, ordenes }: ClientesClientViewProp
                         <Link
                           key={o.id}
                           href={`/ordenes/${o.codigo}`}
-                          className="flex items-center justify-between p-1.5 rounded-lg hover:bg-muted text-xs transition-colors"
+                          className="flex items-center justify-between p-1.5 rounded-md hover:bg-muted/60 text-xs transition-[background-color] duration-150 ease-[var(--ease-out)]"
                         >
                           <span className="font-mono font-bold text-primary">
                             {o.codigo}
@@ -161,7 +165,7 @@ export function ClientesClientView({ clientes, ordenes }: ClientesClientViewProp
       {/* Modal para Crear Cliente */}
       {modalAbierto && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card rounded-2xl border border-border/80 p-6 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95">
+          <div className="bg-card rounded-xl border border-border/80 p-5 max-w-md w-full shadow-lg space-y-4 card-highlight">
             <div className="flex items-center justify-between pb-2 border-b border-border/60">
               <h3 className="font-bold text-lg text-foreground">
                 Registrar Nuevo Cliente

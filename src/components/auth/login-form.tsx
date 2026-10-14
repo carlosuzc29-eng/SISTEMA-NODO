@@ -6,10 +6,12 @@ import { PinKeypad } from "./pin-keypad";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AlertCircle, Lock, User, Loader2, ShieldAlert } from "lucide-react";
+import { AlertCircle, User, Loader2, ShieldAlert } from "lucide-react";
 import { loginConPin } from "@/features/auth/actions";
 import { toast } from "sonner";
 import { brand } from "@/config/brand";
+
+import Image from "next/image";
 
 const testUsers = [
   { usuario: "admin", label: "Admin" },
@@ -74,40 +76,47 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md border-border/80 shadow-2xl backdrop-blur-md bg-card/95">
-      <CardHeader className="text-center pb-4 pt-8">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/20 shadow-inner">
-          <Lock className="h-7 w-7" />
+    <Card className="w-full max-w-md border-border/80 shadow-lg backdrop-blur-xl bg-card/85 card-highlight">
+      <CardHeader className="text-center pb-3 pt-7">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 shadow-xs">
+          <Image
+            src="/brand/logo.svg"
+            alt="NODO 26 Logo"
+            width={28}
+            height={28}
+            className="w-7 h-7"
+            priority
+          />
         </div>
-        <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
+        <CardTitle className="text-xl font-bold tracking-tight text-foreground">
           {brand.nombre}
         </CardTitle>
-        <CardDescription className="text-sm text-muted-foreground mt-1">
-          Ingresa tu usuario y PIN de 6 dígitos para acceder al sistema
+        <CardDescription className="text-xs text-muted-foreground mt-0.5">
+          Control de Producción • Ingresa usuario y PIN de 6 dígitos
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-6 pb-8">
+      <CardContent className="space-y-5 pb-7">
         {bloqueado ? (
-          <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-5 text-center space-y-2">
+          <div className="rounded-xl border border-destructive/30 bg-destructive-subtle p-4 text-center space-y-2">
             <div className="flex justify-center text-destructive">
-              <ShieldAlert className="h-8 w-8 animate-bounce" />
+              <ShieldAlert className="h-7 w-7" />
             </div>
-            <h4 className="font-semibold text-destructive text-base">
+            <h4 className="font-semibold text-destructive text-sm">
               Acceso Bloqueado Temporalmente
             </h4>
-            <p className="text-sm text-destructive/90 leading-relaxed">
+            <p className="text-xs text-destructive-foreground/90 leading-relaxed">
               Has superado el límite de 5 intentos fallidos. Por seguridad, la cuenta
               estará bloqueada durante los próximos{" "}
               <strong className="underline">{minutosRestantes} minutos</strong>.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Mensaje de error general */}
             {errorMessage && (
-              <div className="flex items-center gap-2.5 rounded-xl border border-destructive/20 bg-destructive/10 p-3.5 text-sm text-destructive animate-in fade-in-50 duration-200">
-                <AlertCircle className="h-4 w-4 shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive-subtle p-3 text-xs text-destructive-foreground">
+                <AlertCircle className="h-4 w-4 shrink-0 text-destructive" />
                 <span>{errorMessage}</span>
               </div>
             )}
@@ -116,42 +125,49 @@ export function LoginForm() {
             <div className="space-y-1.5">
               <label
                 htmlFor="usuario-input"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="label-caps block text-muted-foreground"
               >
                 Usuario
               </label>
               <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
                 <Input
                   id="usuario-input"
                   type="text"
-                  placeholder="Ej. admin, recepcion, op_diseno"
+                  placeholder="admin, recepcion, op_diseno..."
                   value={usuario}
-                  onChange={(e) => setUsuario(e.target.value)}
+                  onChange={(e) => {
+                    setUsuario(e.target.value);
+                    if (errorMessage) setErrorMessage(null);
+                  }}
                   disabled={isPending}
                   autoComplete="username"
                   autoCapitalize="none"
-                  className="pl-10 text-base"
+                  className="pl-9 font-mono text-sm"
                 />
               </div>
             </div>
 
             {/* Teclado numérico y puntos PIN */}
-            <div className="space-y-2 pt-1">
-              <div className="flex justify-between items-center px-1">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between items-center px-0.5">
+                <span className="label-caps text-muted-foreground">
                   PIN de Seguridad
                 </span>
-                <span className="text-xs text-muted-foreground">
-                  {pin.length} / 6 dígitos
+                <span className="text-[11px] font-mono tabular-nums text-muted-foreground/70">
+                  {pin.length} / 6
                 </span>
               </div>
 
               <PinKeypad
                 value={pin}
-                onChange={setPin}
+                onChange={(val) => {
+                  setPin(val);
+                  if (errorMessage) setErrorMessage(null);
+                }}
                 onSubmit={handleSubmit}
                 disabled={isPending}
+                hasError={!!errorMessage}
               />
             </div>
 
@@ -159,11 +175,11 @@ export function LoginForm() {
             <Button
               type="submit"
               disabled={isPending || pin.length !== 6 || !usuario.trim()}
-              className="w-full h-13 text-base font-medium rounded-xl shadow-md transition-all mt-4"
+              className="w-full h-10 text-sm font-medium rounded-lg shadow-xs mt-3"
             >
               {isPending ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Verificando credenciales...
                 </>
               ) : (
@@ -173,10 +189,10 @@ export function LoginForm() {
           </form>
         )}
 
-        {/* Acceso Rápido de Prueba (Semilla Fase 1) */}
-        <div className="pt-2 border-t border-border/50">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block mb-2 text-center">
-            Atajos de Prueba (Seed PIN: 123456)
+        {/* Acceso Rápido de Prueba */}
+        <div className="pt-3 border-t border-border/50">
+          <span className="label-caps block mb-2 text-center text-muted-foreground/70">
+            Atajos de Prueba (PIN: 123456)
           </span>
           <div className="flex flex-wrap justify-center gap-1.5">
             {testUsers.map((item) => (
@@ -184,7 +200,7 @@ export function LoginForm() {
                 key={item.usuario}
                 type="button"
                 onClick={() => handleSelectTestUser(item.usuario)}
-                className="text-[11px] px-2.5 py-1 rounded-lg border border-border/80 hover:bg-accent/80 hover:border-primary/40 text-muted-foreground hover:text-foreground transition-all active:scale-95"
+                className="text-[11px] font-mono px-2 py-0.5 rounded-md border border-border/70 hover:bg-muted/70 hover:border-primary/40 text-muted-foreground hover:text-foreground transition-[transform,background-color,border-color] duration-150 ease-[var(--ease-out)] active:scale-[0.96]"
               >
                 {item.label}
               </button>
@@ -193,8 +209,8 @@ export function LoginForm() {
         </div>
 
         <div className="text-center">
-          <p className="text-xs text-muted-foreground">
-            ¿Olvidaste tu PIN? Contacta al administrador para restablecerlo.
+          <p className="text-[11px] text-muted-foreground/70">
+            ¿Olvidaste tu PIN? Contacta al supervisor para restablecerlo.
           </p>
         </div>
       </CardContent>

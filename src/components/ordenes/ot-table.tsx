@@ -8,15 +8,12 @@ import { OtCard } from "./ot-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { AreaRow, PrioridadOT, EstadoOT } from "@/types/database";
+import { AreaRow, EstadoOT } from "@/types/database";
 import {
   Search,
-  Filter,
   Download,
   LayoutGrid,
   List,
-  ArrowRight,
-  ExternalLink,
   Layers,
   ChevronRight,
 } from "lucide-react";
@@ -178,22 +175,22 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
 
       {/* RESULTADOS: VISTA TABLA */}
       {vista === "tabla" ? (
-        <div className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-muted/40 border-b border-border/80 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                <tr>
-                  <th className="py-3.5 px-4">Código</th>
-                  <th className="py-3.5 px-4">Trabajo</th>
-                  <th className="py-3.5 px-4">Cliente</th>
-                  <th className="py-3.5 px-4 text-right">Tiraje</th>
-                  <th className="py-3.5 px-4">Estación Actual</th>
-                  <th className="py-3.5 px-4">Entrega</th>
-                  <th className="py-3.5 px-4">Estado</th>
-                  <th className="py-3.5 px-4 text-center">Acción</th>
+        <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-xs">
+          <div className="overflow-x-auto max-h-[calc(100vh-280px)]">
+            <table className="w-full text-left text-xs">
+              <thead className="sticky top-0 z-10 bg-muted/90 backdrop-blur-md border-b border-border text-[11px] font-mono label-caps text-muted-foreground">
+                <tr className="h-10">
+                  <th className="py-2 px-3.5">Código</th>
+                  <th className="py-2 px-3.5">Trabajo</th>
+                  <th className="py-2 px-3.5">Cliente</th>
+                  <th className="py-2 px-3.5 text-right">Tiraje</th>
+                  <th className="py-2 px-3.5">Estación Actual</th>
+                  <th className="py-2 px-3.5">Entrega</th>
+                  <th className="py-2 px-3.5">Estado</th>
+                  <th className="py-2 px-3.5 text-center">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/60">
+              <tbody className="divide-y divide-border/50">
                 {ordenesFiltradas.length > 0 ? (
                   ordenesFiltradas.map((o) => {
                     const infoEstado = estadoBadge[o.estado] || estadoBadge.recibida;
@@ -201,41 +198,41 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
                     return (
                       <tr
                         key={o.id}
-                        className="hover:bg-accent/40 transition-colors group cursor-pointer"
+                        className="h-11 hover:bg-muted/40 transition-[background-color] duration-100 ease-[var(--ease-out)] group cursor-pointer"
                       >
-                        <td className="py-3.5 px-4 font-mono font-bold text-foreground">
+                        <td className="py-2 px-3.5 font-mono font-bold text-foreground">
                           <Link href={`/ordenes/${o.codigo}`} className="hover:text-primary">
                             {o.codigo}
                           </Link>
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-2 px-3.5">
                           <Link href={`/ordenes/${o.codigo}`} className="block">
-                            <span className="font-semibold text-foreground group-hover:text-primary transition-colors block">
+                            <span className="font-medium text-foreground group-hover:text-primary transition-colors block truncate max-w-[200px]">
                               {o.titulo}
                             </span>
-                            <span className="text-[11px] text-muted-foreground">
+                            <span className="text-[10px] text-muted-foreground">
                               {o.tipo_trabajo.nombre}
                             </span>
                           </Link>
                         </td>
-                        <td className="py-3.5 px-4">
-                          <span className="font-medium text-foreground block">
+                        <td className="py-2 px-3.5">
+                          <span className="font-medium text-foreground block truncate max-w-[180px]">
                             {o.cliente.empresa || o.cliente.nombre}
                           </span>
                           {o.cliente.empresa && (
-                            <span className="text-[11px] text-muted-foreground">
+                            <span className="text-[10px] text-muted-foreground">
                               {o.cliente.nombre}
                             </span>
                           )}
                         </td>
-                        <td className="py-3.5 px-4 text-right tabular-nums font-bold text-foreground">
+                        <td className="py-2 px-3.5 text-right tabular-nums font-mono font-bold text-foreground">
                           {o.cantidad.toLocaleString("es-ES")}
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-2 px-3.5">
                           {o.area_actual ? (
                             <Badge
                               variant="outline"
-                              className="font-medium text-[11px]"
+                              className="font-medium text-[10px] font-mono py-0"
                               style={{
                                 borderColor: o.area_actual.color_hex,
                                 color: o.area_actual.color_hex,
@@ -245,23 +242,23 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
                               {o.area_actual.nombre}
                             </Badge>
                           ) : (
-                            <span className="text-xs text-muted-foreground">-</span>
+                            <span className="text-xs text-muted-foreground font-mono">-</span>
                           )}
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-2 px-3.5">
                           <OtSemaphore fechaEntrega={o.fecha_entrega} />
                         </td>
-                        <td className="py-3.5 px-4">
+                        <td className="py-2 px-3.5">
                           <span
-                            className={`inline-block text-[11px] px-2.5 py-0.5 rounded-full font-medium ${infoEstado.className}`}
+                            className={`inline-block text-[10px] px-2 py-0.5 rounded-md font-mono font-medium ${infoEstado.className}`}
                           >
                             {infoEstado.label}
                           </span>
                         </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <Button asChild variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg">
+                        <td className="py-2 px-3.5 text-center">
+                          <Button asChild variant="ghost" size="sm" className="h-7 w-7 p-0 rounded-md">
                             <Link href={`/ordenes/${o.codigo}`} title="Ver detalle">
-                              <ChevronRight className="h-4 w-4" />
+                              <ChevronRight className="h-3.5 w-3.5" />
                             </Link>
                           </Button>
                         </td>
@@ -270,8 +267,27 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-sm text-muted-foreground">
-                      No se encontraron órdenes que coincidan con los filtros aplicados.
+                    <td colSpan={8} className="py-12 text-center text-xs text-muted-foreground">
+                      <div className="flex flex-col items-center justify-center gap-2 max-w-xs mx-auto">
+                        <Layers className="h-8 w-8 text-muted-foreground/40 stroke-[1.5]" />
+                        <p className="font-medium text-foreground">No hay órdenes que coincidan</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Intenta ajustar o reiniciar los filtros de búsqueda.
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSearch("");
+                            setFiltroEstado("todas");
+                            setFiltroPrioridad("todas");
+                            setFiltroArea("todas");
+                          }}
+                          className="mt-2 h-8 text-xs font-mono"
+                        >
+                          Limpiar Filtros
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 )}

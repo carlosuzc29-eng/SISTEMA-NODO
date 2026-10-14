@@ -210,6 +210,33 @@ h1, h2, h3 {
   animation: shimmer-move 1.8s infinite linear;
 }
 
+/* Shake de error para PIN (3 oscilaciones, 300ms) */
+@keyframes pin-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.animate-pin-shake {
+  animation: pin-shake 300ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Entrada escalonada de stat cards (300ms, translateY(6px) + opacity) */
+@keyframes stat-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stat-enter {
+  animation: stat-card-enter 300ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+}
+
 /* Accesibilidad de movimiento y transparencia */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {

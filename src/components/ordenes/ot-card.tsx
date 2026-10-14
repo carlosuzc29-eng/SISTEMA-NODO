@@ -3,10 +3,11 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { OtSemaphore } from "./ot-semaphore";
 import { OrdenConRelaciones } from "@/features/ordenes/actions";
 import { OrdenEtapaRow } from "@/types/database";
-import { Play, Pause, Check, RotateCw, AlertTriangle, Box, ChevronRight } from "lucide-react";
+import { Play, Pause, Check, RotateCw, Box } from "lucide-react";
+import { differenceInCalendarDays, parseISO, isToday } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface OtCardProps {
   orden: OrdenConRelaciones;
@@ -30,83 +31,105 @@ export function OtCard({
   isActionPending = false,
 }: OtCardProps) {
   const isUrgente = orden.prioridad === "urgente";
-  const isAlta = orden.prioridad === "alta";
 
-  const prioridadColor: Record<string, string> = {
-    urgente: "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30",
-    alta: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30",
-    normal: "bg-muted text-muted-foreground border-border/80",
-    baja: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-border/60",
-  };
+  // Cálculo de urgencia para barra lateral de semáforo
+  const hoy = new Date();
+  const fecha = typeof orden.fecha_entrega === "string" ? parseISO(orden.fecha_entrega) : orden.fecha_entrega;
+  const diasDiferencia = differenceInCalendarDays(fecha, hoy);
 
-  const prioridadEtiqueta: Record<string, string> = {
-    urgente: "Urgente",
-    alta: "Alta",
-    normal: "Normal",
-    baja: "Baja",
-  };
+  let urgencyBarColor = "bg-[var(--success)]";
+  let urgencyText = `${diasDiferencia}d`;
+  let urgencyTextClass = "text-[var(--success)]";
+
+  if (diasDiferencia < 0) {
+    urgencyBarColor = "bg-destructive";
+    urgencyText = `${Math.abs(diasDiferencia)}d atraso`;
+    urgencyTextClass = "text-destructive font-semibold";
+  } else if (isToday(fecha)) {
+    urgencyBarColor = "bg-destructive";
+    urgencyText = "Vence hoy";
+    urgencyTextClass = "text-destructive font-semibold";
+  } else if (diasDiferencia <= 2) {
+    urgencyBarColor = "bg-[var(--warning)]";
+    urgencyText = `${diasDiferencia}d restantes`;
+    urgencyTextClass = "text-[var(--warning)]";
+  }
+
+  const iniciales = (orden.cliente.empresa || orden.cliente.nombre)
+    .split(" ")
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <div
       onClick={() => onSelect && onSelect(orden)}
-      className={`rounded-2xl border bg-card text-card-foreground p-4 shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md hover:border-primary/50 relative overflow-hidden group ${
+      className={cn(
+        "rounded-xl border bg-card text-card-foreground p-3.5 shadow-xs relative overflow-hidden cursor-pointer",
+        "transition-[box-shadow,border-color,transform] duration-150 ease-[var(--ease-out)]",
+        "active:scale-[0.99] hover:border-border hover:shadow-sm pl-4",
         isUrgente
-          ? "border-red-500/40 ring-1 ring-red-500/20"
+          ? "border-destructive/40 ring-1 ring-destructive/20"
           : "border-border/80"
-      }`}
-    >
-      {/* Barra superior de acento si es urgente o tiene color de área */}
-      {isUrgente && (
-        <div className="absolute top-0 left-0 right-0 h-1 bg-red-500" />
       )}
+    >
+      {/* Semáforo como barra lateral de color (sustituye al círculo) */}
+      <div className={cn("absolute left-0 top-0 bottom-0 w-1", urgencyBarColor)} />
 
       {/* Cabecera de la Tarjeta */}
-      <div className="flex items-center justify-between gap-2 pb-2">
+      <div className="flex items-center justify-between gap-2 pb-1.5">
         <div className="flex items-center gap-1.5">
-          <span className="font-mono font-bold text-sm tracking-tight text-foreground group-hover:text-primary transition-colors">
+          <span className="font-mono font-bold text-xs tracking-tight text-foreground">
             {orden.codigo}
           </span>
-          <Badge
-            variant="outline"
-            className={`text-[10px] font-bold uppercase tracking-wider py-0 px-2 ${prioridadColor[orden.prioridad]}`}
-          >
-            {isUrgente && <AlertTriangle className="h-2.5 w-2.5 mr-1 inline" />}
-            {prioridadEtiqueta[orden.prioridad]}
-          </Badge>
+          {isUrgente && (
+            <Badge
+              variant="destructive"
+              className="text-[9px] font-mono uppercase tracking-wider py-0 px-1.5"
+            >
+              Urgente
+            </Badge>
+          )}
         </div>
 
-        <OtSemaphore fechaEntrega={orden.fecha_entrega} />
+        <span className={cn("text-[10px] font-mono tabular-nums", urgencyTextClass)}>
+          {urgencyText}
+        </span>
       </div>
 
-      {/* Información del Trabajo y Cliente */}
-      <div className="space-y-1 py-1">
-        <h4 className="font-semibold text-sm text-foreground line-clamp-1 leading-snug">
+      {/* Información del Trabajo */}
+      <div className="space-y-0.5 py-0.5">
+        <h4 className="font-medium text-xs text-foreground line-clamp-1 leading-snug">
           {orden.titulo}
         </h4>
-        <p className="text-xs text-muted-foreground truncate">
-          {orden.cliente.empresa
-            ? `${orden.cliente.empresa} (${orden.cliente.nombre})`
-            : orden.cliente.nombre}
-        </p>
+        <div className="flex items-center gap-1.5 pt-0.5">
+          {/* Avatar del cliente / responsable */}
+          <div className="h-4 w-4 rounded-full bg-muted border border-border/80 flex items-center justify-center text-[9px] font-mono font-bold text-muted-foreground shrink-0">
+            {iniciales}
+          </div>
+          <p className="text-[11px] text-muted-foreground truncate">
+            {orden.cliente.empresa || orden.cliente.nombre}
+          </p>
+        </div>
       </div>
 
       {/* Especificaciones Rápidas */}
-      <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 mt-1 border-t border-border/60">
-        <div className="flex items-center gap-1.5">
-          <Box className="h-3.5 w-3.5" />
-          <span className="font-medium truncate max-w-[140px]">
-            {orden.tipo_trabajo.nombre}
-          </span>
+      <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-2 mt-1.5 border-t border-border/50">
+        <div className="flex items-center gap-1 truncate max-w-[130px]">
+          <Box className="h-3 w-3 shrink-0" />
+          <span className="truncate">{orden.tipo_trabajo.nombre}</span>
         </div>
-        <div className="font-bold tabular-nums text-foreground bg-muted/60 px-2 py-0.5 rounded-md">
+        <div className="font-mono font-medium tabular-nums text-foreground bg-muted/60 px-1.5 py-0.5 rounded text-[10px]">
           {orden.cantidad.toLocaleString("es-ES")} uds
         </div>
       </div>
 
-      {/* Botones de Acción Operativa (si está en un tablero de área) */}
+      {/* Botones de Acción Operativa (si está en tablero de área) */}
       {etapaActual && (
         <div
-          className="pt-3 mt-2 border-t border-border/60 flex items-center gap-2"
+          className="pt-2.5 mt-2 border-t border-border/50 flex items-center gap-1.5"
           onClick={(e) => e.stopPropagation()}
         >
           {etapaActual.estado === "en_cola" && onIniciar && (
@@ -115,10 +138,10 @@ export function OtCard({
               size="sm"
               disabled={isActionPending}
               onClick={() => onIniciar(etapaActual.id)}
-              className="w-full h-10 font-semibold rounded-xl bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+              className="w-full h-9 font-medium text-xs rounded-lg shadow-xs"
             >
-              <Play className="h-4 w-4 mr-1.5 fill-current" />
-              <span>Iniciar Trabajo</span>
+              <Play className="h-3 w-3 mr-1 fill-current" />
+              <span>Iniciar Estación</span>
             </Button>
           )}
 
@@ -131,9 +154,9 @@ export function OtCard({
                   size="sm"
                   disabled={isActionPending}
                   onClick={() => onPausar(etapaActual.id)}
-                  className="flex-1 h-10 font-medium rounded-xl border-amber-500/40 text-amber-600 hover:bg-amber-500/10"
+                  className="flex-1 h-9 font-medium text-xs rounded-lg border-[var(--warning)]/40 text-[var(--warning)] hover:bg-[var(--warning-subtle)]"
                 >
-                  <Pause className="h-4 w-4 mr-1" />
+                  <Pause className="h-3 w-3 mr-1" />
                   <span>Pausar</span>
                 </Button>
               )}
@@ -143,9 +166,9 @@ export function OtCard({
                   size="sm"
                   disabled={isActionPending}
                   onClick={() => onTerminar(etapaActual.id)}
-                  className="flex-1 h-10 font-semibold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
+                  className="flex-1 h-9 font-medium text-xs rounded-lg bg-[var(--success)] text-[var(--success-foreground)] hover:opacity-90 shadow-xs"
                 >
-                  <Check className="h-4 w-4 mr-1" />
+                  <Check className="h-3 w-3 mr-1" />
                   <span>Terminar</span>
                 </Button>
               )}
@@ -158,20 +181,20 @@ export function OtCard({
               size="sm"
               disabled={isActionPending}
               onClick={() => onReanudar(etapaActual.id)}
-              className="w-full h-10 font-semibold rounded-xl bg-amber-500 text-white hover:bg-amber-600 shadow-sm"
+              className="w-full h-9 font-medium text-xs rounded-lg bg-[var(--warning)] text-[var(--warning-foreground)] hover:opacity-90 shadow-xs"
             >
-              <RotateCw className="h-4 w-4 mr-1.5" />
-              <span>Reanudar Trabajo</span>
+              <RotateCw className="h-3 w-3 mr-1" />
+              <span>Reanudar</span>
             </Button>
           )}
 
           {etapaActual.estado === "terminada" && (
-            <div className="w-full flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-medium py-1">
-              <span className="flex items-center gap-1">
-                <Check className="h-3.5 w-3.5" />
+            <div className="w-full flex items-center justify-between text-xs text-[var(--success)] font-medium py-0.5">
+              <span className="flex items-center gap-1 text-[11px]">
+                <Check className="h-3 w-3" />
                 Etapa completada
               </span>
-              <span className="tabular-nums font-mono text-[11px]">
+              <span className="tabular-nums font-mono text-[10px]">
                 {etapaActual.minutos_trabajados} min
               </span>
             </div>

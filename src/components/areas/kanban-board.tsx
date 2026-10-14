@@ -150,32 +150,32 @@ export function KanbanBoard({
   return (
     <>
       {/* Tablero Kanban de 4 Columnas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 items-start">
         {columnas.map((col) => {
           const Icon = col.icono;
 
           return (
             <div
               key={col.id}
-              className="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm p-4 flex flex-col gap-3 min-h-[500px]"
+              className="rounded-xl border border-border/80 bg-card/50 backdrop-blur-sm p-3 flex flex-col gap-2.5 min-h-[540px]"
             >
-              {/* Encabezado de Columna */}
-              <div className="flex items-center justify-between pb-2 border-b border-border/60">
-                <div className="flex items-center gap-2">
-                  <Icon className={`h-4 w-4 ${col.color}`} />
-                  <span className="font-semibold text-sm text-foreground">
+              {/* Encabezado fijo de Columna */}
+              <div className="sticky top-0 z-10 flex items-center justify-between pb-2 pt-0.5 bg-card/90 backdrop-blur-md border-b border-border/60">
+                <div className="flex items-center gap-1.5">
+                  <Icon className={`h-3.5 w-3.5 ${col.color}`} />
+                  <span className="font-semibold text-xs text-foreground uppercase tracking-wider font-mono">
                     {col.titulo}
                   </span>
                 </div>
                 <span
-                  className={`text-xs px-2.5 py-0.5 rounded-full font-bold tabular-nums ${col.badgeColor}`}
+                  className={`text-[11px] px-2 py-0.2 rounded-md font-mono font-bold tabular-nums ${col.badgeColor}`}
                 >
                   {col.items.length}
                 </span>
               </div>
 
               {/* Lista de Tarjetas o Estado Vacío */}
-              <div className="flex flex-col gap-3 flex-1">
+              <div className="flex flex-col gap-2 flex-1">
                 {col.items.length > 0 ? (
                   col.items.map(({ orden, etapa }) => (
                     <OtCard
@@ -191,12 +191,12 @@ export function KanbanBoard({
                     />
                   ))
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center p-6 rounded-xl border border-dashed border-border/60 bg-muted/20">
-                    <PackageOpen className="h-9 w-9 text-muted-foreground/40 mb-2.5" />
-                    <p className="text-xs font-semibold text-foreground">
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-5 rounded-lg border border-dashed border-border/60 bg-muted/20">
+                    <PackageOpen className="h-7 w-7 text-muted-foreground/40 mb-2 stroke-[1.5]" />
+                    <p className="text-xs font-medium text-foreground">
                       Sin órdenes {col.titulo.toLowerCase()}
                     </p>
-                    <p className="text-[11px] text-muted-foreground mt-1 max-w-[170px] leading-relaxed">
+                    <p className="text-[11px] text-muted-foreground mt-0.5 max-w-[160px] leading-relaxed">
                       {col.id === "cola"
                         ? "Aparecerán automáticamente aquí al ser asignadas a esta área."
                         : "No hay trabajos en este estado actualmente."}
