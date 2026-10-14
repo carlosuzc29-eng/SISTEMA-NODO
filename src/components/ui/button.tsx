@@ -4,27 +4,28 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-[transform,background-color,box-shadow,color,border-color] duration-150 ease-[var(--ease-out)] focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/25 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97]",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow",
+          "bg-gradient-to-b from-primary to-[oklch(0.50_0.22_260)] text-primary-foreground shadow-xs [box-shadow:inset_0_1px_0_0_rgb(255_255_255/0.18)] [@media(hover:hover)]:hover:brightness-105 active:brightness-95",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+          "bg-gradient-to-b from-destructive to-[oklch(0.52_0.22_25)] text-destructive-foreground shadow-xs [box-shadow:inset_0_1px_0_0_rgb(255_255_255/0.18)] [@media(hover:hover)]:hover:brightness-105 active:brightness-95",
         outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
+          "border border-border/80 bg-card text-foreground shadow-xs [@media(hover:hover)]:hover:bg-accent [@media(hover:hover)]:hover:border-foreground/20 active:bg-accent/80",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-secondary text-secondary-foreground shadow-xs [@media(hover:hover)]:hover:bg-secondary/80 active:bg-secondary/90",
+        ghost:
+          "text-foreground/80 [@media(hover:hover)]:hover:bg-accent [@media(hover:hover)]:hover:text-foreground active:bg-accent/80",
+        link: "text-primary underline-offset-4 [@media(hover:hover)]:hover:underline",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-12 rounded-xl px-8 text-base",
-        icon: "h-10 w-10",
-        keypad: "h-16 w-full text-xl font-semibold rounded-xl",
+        default: "h-9 px-3.5 py-1.5 text-xs font-semibold",
+        sm: "h-8 rounded-md px-2.5 text-xs",
+        lg: "h-11 rounded-xl px-6 text-sm font-semibold",
+        icon: "h-9 w-9",
+        keypad: "h-14 w-full text-lg font-semibold rounded-xl",
       },
     },
     defaultVariants: {

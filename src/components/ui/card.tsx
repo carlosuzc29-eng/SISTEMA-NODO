@@ -1,19 +1,37 @@
 import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-2xl border border-border/80 bg-card text-card-foreground shadow-sm transition-all",
-      className
-    )}
-    {...props}
-  />
-));
+const cardVariants = cva(
+  "rounded-2xl border border-border/80 bg-card text-card-foreground shadow-xs card-highlight",
+  {
+    variants: {
+      variant: {
+        default: "",
+        interactive:
+          "cursor-pointer transition-[transform,box-shadow,border-color] duration-150 ease-[var(--ease-out)] [@media(hover:hover)]:hover:border-foreground/20 [@media(hover:hover)]:hover:shadow-sm active:scale-[0.99]",
+        stat: "p-5 border border-border/70 relative overflow-hidden",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
+export interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(cardVariants({ variant, className }))}
+      {...props}
+    />
+  )
+);
 Card.displayName = "Card";
 
 const CardHeader = React.forwardRef<
@@ -35,7 +53,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-xl font-semibold leading-none tracking-tight",
+      "text-base font-semibold leading-none tracking-tight text-foreground",
       className
     )}
     {...props}
@@ -49,7 +67,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground leading-relaxed", className)}
+    className={cn("text-xs text-muted-foreground leading-relaxed", className)}
     {...props}
   />
 ));
@@ -82,4 +100,5 @@ export {
   CardTitle,
   CardDescription,
   CardContent,
+  cardVariants,
 };
