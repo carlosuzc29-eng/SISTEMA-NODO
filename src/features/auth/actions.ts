@@ -22,7 +22,6 @@ const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
     nombre_completo: "Administrador General",
     usuario: "admin",
     rol: "admin",
-    area_id: null,
     activo: true,
     created_at: "2026-10-14T00:00:00Z",
     updated_at: "2026-10-14T00:00:00Z",
@@ -33,7 +32,6 @@ const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
     nombre_completo: "Atención y Recepción",
     usuario: "recepcion",
     rol: "recepcion",
-    area_id: null,
     activo: true,
     created_at: "2026-10-14T00:00:00Z",
     updated_at: "2026-10-14T00:00:00Z",
@@ -44,7 +42,6 @@ const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
     nombre_completo: "Supervisor de Planta",
     usuario: "supervisor",
     rol: "supervisor",
-    area_id: null,
     activo: true,
     created_at: "2026-10-14T00:00:00Z",
     updated_at: "2026-10-14T00:00:00Z",
@@ -55,18 +52,22 @@ const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
     nombre_completo: "Operador de Diseño",
     usuario: "op_diseno",
     rol: "operador",
-    area_id: "11111111-1111-1111-1111-111111111101",
     activo: true,
     created_at: "2026-10-14T00:00:00Z",
     updated_at: "2026-10-14T00:00:00Z",
     areas: {
       id: "11111111-1111-1111-1111-111111111101",
-      nombre: "Diseño",
-      slug: "diseno",
+      nombre: "Diseño gráfico / Arte final",
+      slug: "diseno-arte-final",
       color_hex: "#8B5CF6",
       icono_lucide: "Palette",
       orden: 1,
+      fase: "pre_prensa",
+      tipo_espera: null,
       requiere_aprobacion_cliente: true,
+      es_condicional: false,
+      es_control_calidad: false,
+      es_despacho: false,
       activa: true,
       created_at: "2026-10-14T00:00:00Z",
       updated_at: "2026-10-14T00:00:00Z",
@@ -77,18 +78,22 @@ const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
     nombre_completo: "Operador de Impresión",
     usuario: "op_impresion",
     rol: "operador",
-    area_id: "11111111-1111-1111-1111-111111111102",
     activo: true,
     created_at: "2026-10-14T00:00:00Z",
     updated_at: "2026-10-14T00:00:00Z",
     areas: {
       id: "11111111-1111-1111-1111-111111111102",
-      nombre: "Impresión",
-      slug: "impresion",
+      nombre: "Impresión / Secado",
+      slug: "impresion-secado",
       color_hex: "#3B82F6",
       icono_lucide: "Printer",
-      orden: 2,
+      orden: 4,
+      fase: "prensa",
+      tipo_espera: "secado",
       requiere_aprobacion_cliente: false,
+      es_condicional: false,
+      es_control_calidad: false,
+      es_despacho: false,
       activa: true,
       created_at: "2026-10-14T00:00:00Z",
       updated_at: "2026-10-14T00:00:00Z",
@@ -99,7 +104,6 @@ const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
     nombre_completo: "Operador de Troquelado",
     usuario: "op_troquelado",
     rol: "operador",
-    area_id: "11111111-1111-1111-1111-111111111103",
     activo: true,
     created_at: "2026-10-14T00:00:00Z",
     updated_at: "2026-10-14T00:00:00Z",
@@ -109,8 +113,13 @@ const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
       slug: "troquelado",
       color_hex: "#F59E0B",
       icono_lucide: "Scissors",
-      orden: 3,
+      orden: 6,
+      fase: "post_prensa",
+      tipo_espera: null,
       requiere_aprobacion_cliente: false,
+      es_condicional: false,
+      es_control_calidad: false,
+      es_despacho: false,
       activa: true,
       created_at: "2026-10-14T00:00:00Z",
       updated_at: "2026-10-14T00:00:00Z",
@@ -121,18 +130,48 @@ const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
     nombre_completo: "Operador de Corte",
     usuario: "op_corte",
     rol: "operador",
-    area_id: "11111111-1111-1111-1111-111111111104",
     activo: true,
     created_at: "2026-10-14T00:00:00Z",
     updated_at: "2026-10-14T00:00:00Z",
     areas: {
       id: "11111111-1111-1111-1111-111111111104",
-      nombre: "Corte",
-      slug: "corte",
+      nombre: "Corte y refile / Esquineado",
+      slug: "corte-refile",
       color_hex: "#10B981",
       icono_lucide: "Layers",
-      orden: 4,
+      orden: 7,
+      fase: "post_prensa",
+      tipo_espera: null,
       requiere_aprobacion_cliente: false,
+      es_condicional: false,
+      es_control_calidad: false,
+      es_despacho: false,
+      activa: true,
+      created_at: "2026-10-14T00:00:00Z",
+      updated_at: "2026-10-14T00:00:00Z",
+    },
+  },
+  op_logistica: {
+    id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0008",
+    nombre_completo: "Operador de Logística y Despacho",
+    usuario: "op_logistica",
+    rol: "operador",
+    activo: true,
+    created_at: "2026-10-14T00:00:00Z",
+    updated_at: "2026-10-14T00:00:00Z",
+    areas: {
+      id: "11111111-1111-1111-1111-111111111110",
+      nombre: "Embalaje",
+      slug: "embalaje",
+      color_hex: "#EAB308",
+      icono_lucide: "PackageCheck",
+      orden: 10,
+      fase: "post_prensa",
+      tipo_espera: null,
+      requiere_aprobacion_cliente: false,
+      es_condicional: false,
+      es_control_calidad: false,
+      es_despacho: false,
       activa: true,
       created_at: "2026-10-14T00:00:00Z",
       updated_at: "2026-10-14T00:00:00Z",
@@ -277,8 +316,13 @@ export async function cerrarSesion() {
   redirect("/login");
 }
 
+export type UsuarioConAreas = ProfileRow & {
+  area?: AreaRow | null;
+  areas_asignadas?: AreaRow[];
+};
+
 export async function obtenerUsuarioActual(): Promise<{
-  profile: (ProfileRow & { area?: AreaRow | null }) | null;
+  profile: UsuarioConAreas | null;
   error?: string;
 }> {
   const cookieStore = await cookies();
@@ -287,7 +331,22 @@ export async function obtenerUsuarioActual(): Promise<{
   if (devSession?.value) {
     try {
       const parsed = JSON.parse(devSession.value) as ProfileRow & { areas?: AreaRow | null };
-      return { profile: { ...parsed, area: parsed.areas } };
+      const { mockStore } = await import("@/lib/mock-store");
+      const assignedIds = mockStore.usuarioAreas
+        .filter((ua) => ua.usuario_id === parsed.id)
+        .map((ua) => ua.area_id);
+
+      const assignedAreas = mockStore.areas.filter((a) =>
+        assignedIds.includes(a.id)
+      );
+
+      return {
+        profile: {
+          ...parsed,
+          area: parsed.areas || assignedAreas[0] || null,
+          areas_asignadas: assignedAreas.length > 0 ? assignedAreas : parsed.areas ? [parsed.areas] : [],
+        },
+      };
     } catch {
       // Continuar con Supabase
     }
@@ -306,7 +365,7 @@ export async function obtenerUsuarioActual(): Promise<{
 
       const { data: profileData, error } = await supabase
         .from("profiles")
-        .select("*, area:areas(*)")
+        .select("*")
         .eq("id", user.id)
         .single();
 
@@ -314,7 +373,31 @@ export async function obtenerUsuarioActual(): Promise<{
         return { profile: null, error: error?.message };
       }
 
-      return { profile: profileData as unknown as ProfileRow & { area?: AreaRow | null } };
+      // Obtener áreas asignadas de usuario_areas
+      const { data: uAreas } = await supabase
+        .from("usuario_areas")
+        .select("area_id")
+        .eq("usuario_id", user.id);
+
+      const areaIds = (uAreas || []).map((ua) => ua.area_id);
+      let assignedAreas: AreaRow[] = [];
+      if (areaIds.length > 0) {
+        const { data: areasData } = await supabase
+          .from("areas")
+          .select("*")
+          .in("id", areaIds);
+        assignedAreas = (areasData || []) as unknown as AreaRow[];
+      }
+
+      const profileObj = profileData as unknown as ProfileRow;
+
+      return {
+        profile: {
+          ...profileObj,
+          area: assignedAreas[0] || null,
+          areas_asignadas: assignedAreas,
+        },
+      };
     } catch {
       return { profile: null };
     }

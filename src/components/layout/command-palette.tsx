@@ -12,6 +12,7 @@ import {
   Printer,
   Scissors,
   Layers,
+  CheckCheck,
   X,
 } from "lucide-react";
 
@@ -45,12 +46,19 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const quickLinks = [
     { label: "Nueva Orden de Trabajo", href: "/ordenes/nueva", icon: Plus, group: "Acciones" },
     { label: "Ver Todas las Órdenes", href: "/ordenes", icon: FileSpreadsheet, group: "Producción" },
-    { label: "Cola de Entregas", href: "/entregas", icon: Truck, group: "Producción" },
+    { label: "Muelle de Despachos", href: "/despachos", icon: Truck, group: "Producción" },
     { label: "Directorio de Clientes", href: "/clientes", icon: Users, group: "Gestión" },
-    { label: "Área de Diseño", href: "/area/diseno", icon: Palette, group: "Estaciones" },
-    { label: "Área de Impresión", href: "/area/impresion", icon: Printer, group: "Estaciones" },
-    { label: "Área de Troquelado", href: "/area/troquelado", icon: Scissors, group: "Estaciones" },
-    { label: "Área de Corte", href: "/area/corte", icon: Layers, group: "Estaciones" },
+    { label: "Diseño gráfico / Arte final", href: "/area/diseno-arte-final", icon: Palette, group: "Pre-prensa" },
+    { label: "Planchas / CTP", href: "/area/planchas", icon: Layers, group: "Pre-prensa" },
+    { label: "Preparación de materiales", href: "/area/preparacion-materiales", icon: Layers, group: "Pre-prensa" },
+    { label: "Impresión / Secado", href: "/area/impresion-secado", icon: Printer, group: "Prensa" },
+    { label: "Acabado exterior", href: "/area/acabado", icon: Layers, group: "Prensa" },
+    { label: "Troquelado", href: "/area/troquelado", icon: Scissors, group: "Post-prensa" },
+    { label: "Corte y refile", href: "/area/corte-refile", icon: Layers, group: "Post-prensa" },
+    { label: "Encuadernación / Armado manual", href: "/area/encuadernacion-manual", icon: Layers, group: "Post-prensa" },
+    { label: "Control de calidad", href: "/area/control-calidad", icon: CheckCheck, group: "Post-prensa" },
+    { label: "Embalaje", href: "/area/embalaje", icon: Layers, group: "Post-prensa" },
+    { label: "Despacho", href: "/area/despacho", icon: Truck, group: "Post-prensa" },
   ];
 
   const filtered = quickLinks.filter((item) =>

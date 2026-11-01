@@ -10,9 +10,12 @@ export const crearOrdenSchema = z.object({
   medidas: z.string().min(2, "Indica las medidas del trabajo (ej. 10x15 cm o 60x60x140 mm)"),
   tintas: z.string().min(1, "Indica las tintas de impresión (ej. 4/0 CMYK)"),
   acabados: z.string().optional().nullable(),
+  usa_planchas_existentes: z.boolean().optional().default(false),
+  acabado_ids: z.array(z.string()).optional().default([]),
+  notas_acabado: z.string().optional().nullable(),
   prioridad: z.enum(["baja", "normal", "alta", "urgente"]),
   fecha_entrega: z.string().min(1, "Indica la fecha de entrega prometida"),
   ruta: z.array(z.string()).min(1, "La ruta debe tener al menos un área de producción"),
 });
 
-export type CrearOrdenInput = z.infer<typeof crearOrdenSchema>;
+export type CrearOrdenInput = z.input<typeof crearOrdenSchema>;

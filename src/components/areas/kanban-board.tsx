@@ -1,33 +1,60 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { AreaRow, OrdenEtapaRow, MotivoPausaRow, PrioridadOT } from "@/types/database";
+import { AreaRow, OrdenEtapaRow, MotivoPausaRow, PrioridadOT, ProveedorRow } from "@/types/database";
 import { OrdenConRelaciones } from "@/features/ordenes/actions";
 import { OtCard } from "@/components/ordenes/ot-card";
 import { PausaModal } from "./pausa-modal";
+import { SecadoModal } from "./secado-modal";
+import { ProveedorModal } from "./proveedor-modal";
+import { RechazoModal } from "./rechazo-modal";
+import { OmitirModal } from "./omitir-modal";
 import { OtSheetDetail } from "./ot-sheet-detail";
 import {
   iniciarEtapaAction,
   pausarEtapaAction,
   reanudarEtapaAction,
   terminarEtapaAction,
+  iniciarSecadoAction,
+  enviarAProveedorAction,
+  recibirDeProveedorAction,
+  aprobarCalidadAction,
+  rechazarCalidadAction,
+  omitirEtapaAction,
 } from "@/features/etapas/actions";
 import { toast } from "sonner";
 import { Clock, Play, Pause, CheckCircle, PackageOpen } from "lucide-react";
+import { getEstadoEtapaMetadata } from "@/config/estados";
+import { isToday } from "date-fns";
 
 interface KanbanBoardProps {
   area: AreaRow;
   ordenesConEtapas: { orden: OrdenConRelaciones; etapa: OrdenEtapaRow }[];
   motivosPausa: MotivoPausaRow[];
+  proveedores?: ProveedorRow[];
+  todasLasAreas?: AreaRow[];
 }
 
 export function KanbanBoard({
   area,
   ordenesConEtapas,
   motivosPausa,
+  proveedores = [],
+  todasLasAreas = [],
 }: KanbanBoardProps) {
   const [isPending, startTransition] = useTransition();
+
+  // Estados para los modales de acción
   const [modalPausaEtapaId, setModalPausaEtapaId] = useState<string | null>(null);
+  const [modalSecadoEtapaId, setModalSecadoEtapaId] = useState<string | null>(null);
+  const [modalProveedorEtapaId, setModalProveedorEtapaId] = useState<string | null>(null);
+  const [modalRechazo, setModalRechazo] = useState<{
+    orden: OrdenConRelaciones;
+    etapa: OrdenEtapaRow;
+  } | null>(null);
+  const [modalOmitirEtapaId, setModalOmitirEtapaId] = useState<string | null>(null);
+
+  // Detalle deslizante
   const [sheetOrden, setSheetOrden] = useState<OrdenConRelaciones | null>(null);
 
   // Ordenar tarjetas por prioridad (urgente primero) y luego fecha de entrega
@@ -48,12 +75,18 @@ export function KanbanBoard({
 
   const colCola = ordenesConEtapas.filter((item) => item.etapa.estado === "en_cola").sort(sortCards);
   const colProceso = ordenesConEtapas.filter((item) => item.etapa.estado === "en_proceso").sort(sortCards);
-  const colPausadas = ordenesConEtapas.filter(
-    (item) => item.etapa.estado === "pausada" || item.etapa.estado === "esperando_cliente"
-  ).sort(sortCards);
-  const colTerminadas = ordenesConEtapas.filter((item) => item.etapa.estado === "terminada").sort(sortCards);
+  const colEspera = ordenesConEtapas
+    .filter((item) => getEstadoEtapaMetadata(item.etapa.estado).esEnEspera)
+    .sort(sortCards);
+  const colTerminadas = ordenesConEtapas
+    .filter((item) => {
+      if (item.etapa.estado !== "terminada") return false;
+      if (!item.etapa.terminada_en) return true;
+      return isToday(new Date(item.etapa.terminada_en));
+    })
+    .sort(sortCards);
 
-  // Handlers para las acciones de etapa
+  // Handlers para las acciones
   const handleIniciar = (etapaId: string) => {
     startTransition(async () => {
       const res = await iniciarEtapaAction(etapaId);
@@ -100,12 +133,130 @@ export function KanbanBoard({
       const res = await terminarEtapaAction(etapaId);
       if (res.ok) {
         if (res.esFinal) {
-          toast.success("¡Última etapa completada! La orden pasó a Lista para Entrega 🎉");
+          toast.success("¡Última etapa completada! La orden pasó a Lista para Despacho 🎉");
         } else {
           toast.success("Etapa completada. La orden avanzó a la siguiente estación 🚀");
         }
       } else {
         toast.error(res.error || "No se pudo terminar la etapa");
+      }
+    });
+  };
+
+  // SECADO
+  const handleIniciarSecado = (etapaId: string) => {
+    setModalSecadoEtapaId(etapaId);
+  };
+
+  const handleConfirmSecado = (horas: number, notas: string) => {
+    if (!modalSecadoEtapaId) return;
+    const etapaId = modalSecadoEtapaId;
+    setModalSecadoEtapaId(null);
+
+    startTransition(async () => {
+      const res = await iniciarSecadoAction(etapaId, horas, notas);
+      if (res.ok) {
+        toast.info(`Secado iniciado (${horas}h estimadas). Orden en espera.`);
+      } else {
+        toast.error(res.error || "No se pudo iniciar el secado");
+      }
+    });
+  };
+
+  // PROVEEDOR
+  const handleEnviarProveedor = (etapaId: string) => {
+    setModalProveedorEtapaId(etapaId);
+  };
+
+  const handleConfirmProveedor = (
+    proveedorId: string,
+    fechaEstimada: string,
+    notas: string
+  ) => {
+    if (!modalProveedorEtapaId) return;
+    const etapaId = modalProveedorEtapaId;
+    setModalProveedorEtapaId(null);
+
+    startTransition(async () => {
+      const res = await enviarAProveedorAction(etapaId, proveedorId, fechaEstimada, notas);
+      if (res.ok) {
+        toast.info("Orden enviada a taller externo. En espera de retorno.");
+      } else {
+        toast.error(res.error || "No se pudo registrar el envío");
+      }
+    });
+  };
+
+  const handleRecibirProveedor = (etapaId: string) => {
+    startTransition(async () => {
+      const res = await recibirDeProveedorAction(etapaId);
+      if (res.ok) {
+        toast.success("Trabajo recibido de proveedor externo y listo para procesar.");
+      } else {
+        toast.error(res.error || "No se pudo registrar la recepción");
+      }
+    });
+  };
+
+  // CONTROL DE CALIDAD
+  const handleAprobarCalidad = (etapaId: string) => {
+    startTransition(async () => {
+      const res = await aprobarCalidadAction(etapaId);
+      if (res.ok) {
+        toast.success("¡Control de calidad APROBADO! La orden avanzó.");
+      } else {
+        toast.error(res.error || "No se pudo aprobar el control de calidad");
+      }
+    });
+  };
+
+  const handleRechazarCalidad = (etapaId: string) => {
+    const found = ordenesConEtapas.find((o) => o.etapa.id === etapaId);
+    if (found) {
+      setModalRechazo(found);
+    }
+  };
+
+  const handleConfirmRechazo = (
+    areaDestinoId: string,
+    motivo: string,
+    cantidadAfectada?: number | null
+  ) => {
+    if (!modalRechazo) return;
+    const etapaId = modalRechazo.etapa.id;
+    setModalRechazo(null);
+
+    startTransition(async () => {
+      const res = await rechazarCalidadAction(
+        etapaId,
+        areaDestinoId,
+        motivo,
+        cantidadAfectada
+      );
+      if (res.ok) {
+        toast.error("Rechazo registrado. La orden ha regresado al área de reproceso.");
+      } else {
+        toast.error(res.error || "No se pudo registrar el rechazo");
+      }
+    });
+  };
+
+  // OMITIR
+  const handleOmitir = (etapaId: string) => {
+    setModalOmitirEtapaId(etapaId);
+  };
+
+  const handleConfirmOmitir = (motivo: string) => {
+    if (!modalOmitirEtapaId) return;
+    const etapaId = modalOmitirEtapaId;
+    setModalOmitirEtapaId(null);
+
+    startTransition(async () => {
+      const res = await omitirEtapaAction(etapaId, motivo);
+      if (res.ok) {
+        toast.info("Estación condicional omitida. La orden avanzó.");
+      } else {
+        toast.error(res.error || "No se pudo omitir la estación");
       }
     });
   };
@@ -128,14 +279,12 @@ export function KanbanBoard({
       items: colProceso,
     },
     {
-      id: "pausadas",
-      titulo: area.requiere_aprobacion_cliente
-        ? "Pausadas / Esperando Cliente"
-        : "Pausadas",
+      id: "espera",
+      titulo: "En Espera",
       icono: Pause,
       color: "text-amber-500",
       badgeColor: "bg-amber-500/10 text-amber-600 border border-amber-500/20",
-      items: colPausadas,
+      items: colEspera,
     },
     {
       id: "terminadas",
@@ -182,10 +331,18 @@ export function KanbanBoard({
                       key={etapa.id}
                       orden={orden}
                       etapaActual={etapa}
+                      areaConfig={area}
+                      proveedores={proveedores}
                       onIniciar={handleIniciar}
                       onPausar={handlePausar}
                       onReanudar={handleReanudar}
                       onTerminar={handleTerminar}
+                      onIniciarSecado={handleIniciarSecado}
+                      onEnviarProveedor={handleEnviarProveedor}
+                      onRecibirProveedor={handleRecibirProveedor}
+                      onAprobarCalidad={handleAprobarCalidad}
+                      onRechazarCalidad={handleRechazarCalidad}
+                      onOmitir={handleOmitir}
                       onSelect={(o) => setSheetOrden(o)}
                       isActionPending={isPending}
                     />
@@ -215,6 +372,45 @@ export function KanbanBoard({
         onClose={() => setModalPausaEtapaId(null)}
         motivos={motivosPausa}
         onConfirm={handleConfirmPausar}
+        isPending={isPending}
+      />
+
+      {/* Modal de Secado */}
+      <SecadoModal
+        isOpen={!!modalSecadoEtapaId}
+        onClose={() => setModalSecadoEtapaId(null)}
+        onConfirm={handleConfirmSecado}
+        isPending={isPending}
+      />
+
+      {/* Modal de Proveedor */}
+      <ProveedorModal
+        isOpen={!!modalProveedorEtapaId}
+        onClose={() => setModalProveedorEtapaId(null)}
+        proveedores={proveedores}
+        onConfirm={handleConfirmProveedor}
+        isPending={isPending}
+      />
+
+      {/* Modal de Rechazo en QC */}
+      {modalRechazo && (
+        <RechazoModal
+          isOpen={!!modalRechazo}
+          onClose={() => setModalRechazo(null)}
+          orden={modalRechazo.orden}
+          etapaActual={modalRechazo.etapa}
+          areasDisponibles={todasLasAreas}
+          onConfirm={handleConfirmRechazo}
+          isPending={isPending}
+        />
+      )}
+
+      {/* Modal de Omisión */}
+      <OmitirModal
+        isOpen={!!modalOmitirEtapaId}
+        onClose={() => setModalOmitirEtapaId(null)}
+        nombreArea={area.nombre}
+        onConfirm={handleConfirmOmitir}
         isPending={isPending}
       />
 

@@ -4,6 +4,7 @@ import { obtenerOrdenes, OrdenConRelaciones } from "@/features/ordenes/actions";
 import { obtenerAreas } from "@/features/tipos-trabajo/actions";
 import { mockStore } from "@/lib/mock-store";
 import { AreaRow, EventoOrdenRow } from "@/types/database";
+import { normalizarEstadoOt, getEstadoEtapaMetadata } from "@/config/estados";
 
 export type FlowAreaMetric = {
   area: AreaRow;
@@ -17,7 +18,9 @@ export type FlowAreaMetric = {
 export type DashboardData = {
   kpis: {
     activas: number;
-    listasEntrega: number;
+    enPuerta: number;
+    listasDespacho: number;
+    listasEntrega: number; // alias retrocompatibilidad
     atrasadas: number;
     esperandoAprobacion: number;
     entregadasEstaSemana: number;
@@ -38,8 +41,10 @@ export async function obtenerDashboardData(): Promise<DashboardData> {
   hoy.setHours(0, 0, 0, 0);
 
   // 1. Filtrar métricas de órdenes
-  const activas = todasOrdenes.filter((o) => o.estado === "en_produccion");
-  const listasEntrega = todasOrdenes.filter((o) => o.estado === "lista_entrega");
+  const enPuerta = todasOrdenes.filter((o) => normalizarEstadoOt(o.estado) === "en_puerta");
+  const activas = todasOrdenes.filter((o) => normalizarEstadoOt(o.estado) === "en_produccion");
+  const listasDespacho = todasOrdenes.filter((o) => normalizarEstadoOt(o.estado) === "lista_despacho");
+  const despachadas = todasOrdenes.filter((o) => normalizarEstadoOt(o.estado) === "despachada");
 
   let atrasadas = 0;
   activas.forEach((o) => {
@@ -47,8 +52,8 @@ export async function obtenerDashboardData(): Promise<DashboardData> {
     if (fEntrega < hoy) atrasadas++;
   });
 
-  // OTs esperando cliente (etapa actual pausada con motivo de aprobación o estado esperando_cliente)
-  const esperandoAprobacion = 0; // Se enriquece con etapas
+  // OTs esperando cliente
+  const esperandoAprobacion = mockStore.aprobaciones.filter((a) => a.estado === "pendiente").length;
 
   // 2. Calcular flujo por áreas y cuellos de botella
   let maxCarga = 0;
@@ -62,7 +67,7 @@ export async function obtenerDashboardData(): Promise<DashboardData> {
     etapasArea.forEach((e) => {
       if (e.estado === "en_cola") enCola++;
       else if (e.estado === "en_proceso") enProceso++;
-      else if (e.estado === "pausada" || e.estado === "esperando_cliente") pausadas++;
+      else if (getEstadoEtapaMetadata(e.estado).esEnEspera) pausadas++;
     });
 
     const totalActivas = enCola + enProceso + pausadas;
@@ -94,13 +99,15 @@ export async function obtenerDashboardData(): Promise<DashboardData> {
   return {
     kpis: {
       activas: activas.length,
-      listasEntrega: listasEntrega.length,
+      enPuerta: enPuerta.length,
+      listasDespacho: listasDespacho.length,
+      listasEntrega: listasDespacho.length,
       atrasadas,
       esperandoAprobacion,
-      entregadasEstaSemana: todasOrdenes.filter((o) => o.estado === "entregada").length,
+      entregadasEstaSemana: despachadas.length,
     },
     flujoAreas,
-    listasParaEntrega: listasEntrega,
+    listasParaEntrega: listasDespacho,
     proximasOVencidas: proximasOVencidas.slice(0, 6),
     actividadReciente,
   };

@@ -3,8 +3,8 @@
 import React, { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCheck, X, Truck, Loader2 } from "lucide-react";
-import { marcarEntregadaAction, OrdenConRelaciones } from "@/features/ordenes/actions";
+import { CheckCheck, X, Truck, Loader2, FileText, User } from "lucide-react";
+import { despacharOrdenAction, OrdenConRelaciones } from "@/features/ordenes/actions";
 import { toast } from "sonner";
 
 interface DeliveryModalProps {
@@ -14,26 +14,34 @@ interface DeliveryModalProps {
 }
 
 export function DeliveryModal({ orden, onClose, onSuccess }: DeliveryModalProps) {
-  const [entregadaA, setEntregadaA] = useState("");
+  const [despachadaA, setDespachadaA] = useState("");
+  const [transportista, setTransportista] = useState("");
+  const [guiaDespacho, setGuiaDespacho] = useState("");
+  const [tipoRetiro, setTipoRetiro] = useState<"cliente" | "transportista">("cliente");
   const [isPending, startTransition] = useTransition();
 
   if (!orden) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!entregadaA.trim()) {
-      toast.error("Por favor indica quién retira la orden");
+    if (!despachadaA.trim()) {
+      toast.error("Por favor indica quién retira o recibe la orden");
       return;
     }
 
     startTransition(async () => {
-      const res = await marcarEntregadaAction(orden.id, entregadaA.trim());
+      const res = await despacharOrdenAction(
+        orden.id,
+        despachadaA.trim(),
+        tipoRetiro === "transportista" ? transportista.trim() || "Transporte Externo" : null,
+        guiaDespacho.trim() || null
+      );
       if (res.ok) {
-        toast.success(`¡Orden ${orden.codigo} marcada como entregada!`);
+        toast.success(`¡Orden ${orden.codigo} despachada con éxito!`);
         onClose();
         if (onSuccess) onSuccess();
       } else {
-        toast.error(res.error || "No se pudo registrar la entrega");
+        toast.error(res.error || "No se pudo registrar el despacho");
       }
     });
   };
@@ -42,10 +50,10 @@ export function DeliveryModal({ orden, onClose, onSuccess }: DeliveryModalProps)
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-card rounded-2xl border border-border/80 p-6 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95">
         <div className="flex items-center justify-between pb-2 border-b border-border/60">
-          <div className="flex items-center gap-2.5 text-emerald-600">
+          <div className="flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400">
             <Truck className="h-5 w-5" />
             <h3 className="font-bold text-lg text-foreground">
-              Confirmar Entrega de Trabajo
+              Confirmar Despacho de Orden
             </h3>
           </div>
           <button
@@ -69,18 +77,80 @@ export function DeliveryModal({ orden, onClose, onSuccess }: DeliveryModalProps)
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3.5">
+          {/* Tipo de Retiro */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Nombre de la persona que retira *
+              Modalidad de Retiro
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setTipoRetiro("cliente")}
+                className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                  tipoRetiro === "cliente"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/30 border-border/70 text-foreground hover:bg-muted"
+                }`}
+              >
+                <User className="h-3.5 w-3.5" />
+                <span>Cliente / Mensajero</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTipoRetiro("transportista")}
+                className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                  tipoRetiro === "transportista"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/30 border-border/70 text-foreground hover:bg-muted"
+                }`}
+              >
+                <Truck className="h-3.5 w-3.5" />
+                <span>Envío / Transportista</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              {tipoRetiro === "cliente"
+                ? "Nombre de la persona que retira *"
+                : "Nombre del chofer o receptor *"}
             </label>
             <Input
-              placeholder="Ej. Juan Pérez (Mensajero) / Directo Cliente"
-              value={entregadaA}
-              onChange={(e) => setEntregadaA(e.target.value)}
+              placeholder="Ej. Juan Pérez (C.I. 12.345.678)"
+              value={despachadaA}
+              onChange={(e) => setDespachadaA(e.target.value)}
               autoFocus
               className="text-sm"
               required
+            />
+          </div>
+
+          {tipoRetiro === "transportista" && (
+            <div className="space-y-1.5 animate-in fade-in-50">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Empresa o Datos de Transporte
+              </label>
+              <Input
+                placeholder="Ej. MRW / Zoom / Flete Propio Camión #2"
+                value={transportista}
+                onChange={(e) => setTransportista(e.target.value)}
+                className="text-sm"
+              />
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              <FileText className="h-3.5 w-3.5" />
+              Guía de Despacho / Remisión (Opcional)
+            </label>
+            <Input
+              placeholder="Ej. GD-2026-0891"
+              value={guiaDespacho}
+              onChange={(e) => setGuiaDespacho(e.target.value)}
+              className="text-sm font-mono"
             />
           </div>
 
@@ -95,18 +165,18 @@ export function DeliveryModal({ orden, onClose, onSuccess }: DeliveryModalProps)
             </Button>
             <Button
               type="submit"
-              disabled={isPending || !entregadaA.trim()}
+              disabled={isPending || !despachadaA.trim()}
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl px-5"
             >
               {isPending ? (
                 <>
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                  Registrando...
+                  Despachando...
                 </>
               ) : (
                 <>
                   <CheckCheck className="mr-1.5 h-4 w-4" />
-                  Marcar como Entregada
+                  Confirmar Despacho
                 </>
               )}
             </Button>

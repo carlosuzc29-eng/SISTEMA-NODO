@@ -2,6 +2,7 @@ import { obtenerDashboardData } from "@/features/dashboard/actions";
 import { FlowMap } from "@/components/dashboard/flow-map";
 import { OtSemaphore } from "@/components/ordenes/ot-semaphore";
 import { TimelineFeed } from "@/components/ordenes/timeline-feed";
+import { TvAutoRefresh } from "@/components/dashboard/tv-auto-refresh";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,8 @@ import {
   Layers,
   ArrowUpRight,
   TrendingUp,
+  DoorOpen,
+  CalendarCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,7 +43,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     <div
       className={cn(
         "space-y-6",
-        isTvMode && "p-6 sm:p-10 max-w-[1920px] mx-auto space-y-8"
+        isTvMode && "fixed inset-0 z-50 bg-background overflow-y-auto p-6 sm:p-10 space-y-8"
       )}
     >
       {/* Encabezado Principal */}
@@ -60,21 +63,23 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 variant="outline"
                 className="border-primary/40 bg-primary/10 text-primary text-xs font-mono font-semibold"
               >
-                MODO TV ACTIVO
+                MODO TV ACTIVO • PANTALLA PLANTA
               </Badge>
             )}
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Control de flujo en vivo, cuellos de botella y órdenes en planta.
+            Flujo en vivo de las 11 estaciones de la imprenta, alertas y despachos.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
+          {isTvMode && <TvAutoRefresh intervalSeconds={30} />}
+
           <Button
             asChild
             variant="outline"
             size="sm"
-            className="rounded-lg h-9 text-xs font-mono"
+            className="rounded-xl h-9 text-xs font-mono"
           >
             <Link href={isTvMode ? "/dashboard" : "/dashboard?tv=1"}>
               <Tv className="h-3.5 w-3.5 mr-1.5" />
@@ -86,7 +91,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             <Button
               asChild
               size="sm"
-              className="rounded-lg h-9 text-xs font-semibold shadow-xs"
+              className="rounded-xl h-9 text-xs font-semibold shadow-xs"
             >
               <Link href="/ordenes/nueva">
                 <Plus className="h-3.5 w-3.5 mr-1" />
@@ -97,96 +102,126 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </div>
       </div>
 
-      {/* Tarjetas KPI Principales (Stat Cards con entrada escalonada) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {/* KPI 1: Activas */}
+      {/* 5 Métricas Principales (Stat Cards) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        {/* KPI 1: Activas en Planta */}
         <Card
           variant="stat"
           className={cn(
-            "animate-stat-enter",
-            isTvMode && "p-6 [@media(hover:hover)]:hover:none"
+            "rounded-2xl border-border/80 shadow-xs",
+            isTvMode && "p-4"
           )}
-          style={{ animationDelay: "0ms" }}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
-            <span className="label-caps text-muted-foreground">
-              OTs Activas
+            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+              Activas en Planta
             </span>
             <Activity className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div
               className={cn(
-                "font-mono font-bold tabular-nums text-foreground tracking-[-0.03em]",
-                isTvMode ? "text-5xl sm:text-6xl" : "text-3xl sm:text-4xl"
+                "font-mono font-bold tabular-nums text-foreground tracking-tight",
+                isTvMode ? "text-5xl" : "text-3xl"
               )}
             >
               {data.kpis.activas}
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
-              <span className="text-[11px] text-muted-foreground">En tránsito</span>
+              <span className="text-[11px] text-muted-foreground">En producción</span>
               <span className="text-[11px] font-mono font-medium text-primary flex items-center gap-0.5">
                 <TrendingUp className="h-3 w-3" />
-                en planta
+                en máquinas
               </span>
             </div>
           </CardContent>
         </Card>
 
-        {/* KPI 2: Listas para Entrega */}
+        {/* KPI 2: En Puerta (Pendientes) */}
         <Card
           variant="stat"
           className={cn(
-            "animate-stat-enter",
-            isTvMode && "p-6 [@media(hover:hover)]:hover:none"
+            "rounded-2xl border-border/80 shadow-xs",
+            data.kpis.enPuerta > 0 ? "border-amber-500/40 bg-amber-500/5" : "",
+            isTvMode && "p-4"
           )}
-          style={{ animationDelay: "40ms" }}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
-            <span className="label-caps text-muted-foreground">
-              Listas p/ Entrega
+            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+              En Puerta
             </span>
-            <CheckCircle2 className="h-4 w-4 text-[var(--success)]" />
+            <DoorOpen className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div
               className={cn(
-                "font-mono font-bold tabular-nums text-[var(--success)] tracking-[-0.03em]",
-                isTvMode ? "text-5xl sm:text-6xl" : "text-3xl sm:text-4xl"
+                "font-mono font-bold tabular-nums text-amber-600 dark:text-amber-400 tracking-tight",
+                isTvMode ? "text-5xl" : "text-3xl"
               )}
             >
-              {data.kpis.listasEntrega}
+              {data.kpis.enPuerta}
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
-              <span className="text-[11px] text-muted-foreground">Por retirar</span>
-              <span className="text-[11px] font-mono font-medium text-[var(--success)] flex items-center gap-0.5">
-                <ArrowUpRight className="h-3 w-3" />
-                despacho
+              <span className="text-[11px] text-muted-foreground">Por liberar</span>
+              <span className="text-[11px] font-mono font-medium text-amber-600 dark:text-amber-400">
+                recepción
               </span>
             </div>
           </CardContent>
         </Card>
 
-        {/* KPI 3: Atrasadas / Crítico */}
+        {/* KPI 3: Listas para Despacho */}
         <Card
           variant="stat"
           className={cn(
-            "animate-stat-enter",
-            data.kpis.atrasadas > 0
-              ? "border-destructive/60 bg-destructive-subtle/25 ring-1 ring-destructive/20"
-              : "border-border/80",
-            isTvMode && "p-6 [@media(hover:hover)]:hover:none"
+            "rounded-2xl border-border/80 shadow-xs",
+            isTvMode && "p-4"
           )}
-          style={{ animationDelay: "80ms" }}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
+            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+              Listas Despacho
+            </span>
+            <Truck className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div
+              className={cn(
+                "font-mono font-bold tabular-nums text-emerald-600 dark:text-emerald-400 tracking-tight",
+                isTvMode ? "text-5xl" : "text-3xl"
+              )}
+            >
+              {data.kpis.listasDespacho}
+            </div>
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
+              <span className="text-[11px] text-muted-foreground">Embaladas</span>
+              <span className="text-[11px] font-mono font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+                <ArrowUpRight className="h-3 w-3" />
+                por entregar
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* KPI 4: Atrasadas */}
+        <Card
+          variant="stat"
+          className={cn(
+            "rounded-2xl shadow-xs",
+            data.kpis.atrasadas > 0
+              ? "border-destructive/60 bg-destructive/10 ring-1 ring-destructive/20"
+              : "border-border/80",
+            isTvMode && "p-4"
+          )}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
             <span
               className={cn(
-                "label-caps",
+                "text-[10px] font-mono font-semibold uppercase tracking-wider",
                 data.kpis.atrasadas > 0 ? "text-destructive font-bold" : "text-muted-foreground"
               )}
             >
-              Atrasadas / Crítico
+              Atrasadas
             </span>
             <AlertTriangle
               className={cn(
@@ -198,220 +233,154 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <CardContent className="px-4 pb-4">
             <div
               className={cn(
-                "font-mono font-bold tabular-nums tracking-[-0.03em]",
+                "font-mono font-bold tabular-nums tracking-tight",
                 data.kpis.atrasadas > 0 ? "text-destructive" : "text-foreground",
-                isTvMode ? "text-5xl sm:text-6xl" : "text-3xl sm:text-4xl"
+                isTvMode ? "text-5xl" : "text-3xl"
               )}
             >
               {data.kpis.atrasadas}
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
-              <span className="text-[11px] text-muted-foreground">Prioridad alta</span>
+              <span className="text-[11px] text-muted-foreground">Vencidas</span>
               <span
                 className={cn(
                   "text-[11px] font-mono font-medium",
-                  data.kpis.atrasadas > 0 ? "text-destructive" : "text-muted-foreground"
+                  data.kpis.atrasadas > 0 ? "text-destructive font-bold" : "text-muted-foreground"
                 )}
               >
-                {data.kpis.atrasadas > 0 ? "atención req." : "al día"}
+                {data.kpis.atrasadas > 0 ? "atención" : "al día"}
               </span>
             </div>
           </CardContent>
         </Card>
 
-        {/* KPI 4: Entregadas */}
+        {/* KPI 5: Entregadas en la semana */}
         <Card
           variant="stat"
           className={cn(
-            "animate-stat-enter",
-            isTvMode && "p-6 [@media(hover:hover)]:hover:none"
+            "rounded-2xl border-border/80 shadow-xs",
+            isTvMode && "p-4"
           )}
-          style={{ animationDelay: "120ms" }}
         >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
-            <span className="label-caps text-muted-foreground">
-              Entregadas (Sem)
+            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+              Entregadas Semana
             </span>
-            <Truck className="h-4 w-4 text-primary" />
+            <CalendarCheck className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div
               className={cn(
-                "font-mono font-bold tabular-nums text-foreground tracking-[-0.03em]",
-                isTvMode ? "text-5xl sm:text-6xl" : "text-3xl sm:text-4xl"
+                "font-mono font-bold tabular-nums text-foreground tracking-tight",
+                isTvMode ? "text-5xl" : "text-3xl"
               )}
             >
               {data.kpis.entregadasEstaSemana}
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
-              <span className="text-[11px] text-muted-foreground">Completadas</span>
-              <span className="text-[11px] font-mono font-medium text-foreground/80">
-                histórico
+              <span className="text-[11px] text-muted-foreground">Despachadas</span>
+              <span className="text-[11px] font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                últimos 7d
               </span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Mapa de Flujo de Producción por Estación */}
-      <Card className="border-border/80 shadow-xs">
+      {/* Flujo de Producción de las 11 Áreas Agrupadas en 3 Fases */}
+      <Card className="rounded-2xl border-border/80 shadow-xs">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <CardTitle
+                className={cn(
+                  "font-bold flex items-center gap-2",
+                  isTvMode ? "text-xl" : "text-base"
+                )}
+              >
                 <Layers className="h-4 w-4 text-primary" />
-                Mapa de Flujo de Producción por Estación
+                Flujo Operativo por Fases (11 Estaciones)
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                Carga operativa en tiempo real y detección automática de cuellos de botella
+              <CardDescription className="text-xs">
+                Carga de trabajo en tiempo real a lo largo de Pre-prensa, Prensa y Post-prensa
               </CardDescription>
             </div>
-            {!isTvMode && (
-              <Button asChild variant="ghost" size="sm" className="text-xs h-8">
-                <Link href="/ordenes">Ver todas las órdenes</Link>
-              </Button>
-            )}
+            <span className="text-xs font-mono text-muted-foreground hidden sm:inline">
+              Actualización continua
+            </span>
           </div>
         </CardHeader>
         <CardContent>
-          <FlowMap areasMetricas={data.flujoAreas} />
+          <FlowMap areasMetricas={data.flujoAreas} isTvMode={isTvMode} />
         </CardContent>
       </Card>
 
-      {/* Listas para Entrega y Próximas a Vencer */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Listos para Entrega */}
-        <Card className="border-border/80 shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <div>
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Truck className="h-4 w-4 text-[var(--success)]" />
-                Listas para Retiro / Despacho
+      {/* Secciones inferiores del dashboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Trabajos Próximos a Vencer o Atrasados */}
+        <Card className="rounded-2xl border-border/80 shadow-xs">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Clock className="h-4 w-4 text-amber-500" />
+                Prioridades y Vencimientos
               </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Órdenes que completaron todas las etapas en planta
-              </CardDescription>
-            </div>
-            <Badge variant="outline" className="font-mono tabular-nums text-xs">
-              {data.listasParaEntrega.length}
-            </Badge>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {data.listasParaEntrega.length > 0 ? (
-              data.listasParaEntrega.map((orden) => (
-                <div
-                  key={orden.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/40 transition-[background-color] duration-150 ease-[var(--ease-out)]"
-                >
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs text-foreground">
-                        {orden.codigo}
-                      </span>
-                      <span className="font-medium text-xs text-foreground truncate max-w-[200px]">
-                        {orden.titulo}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      {orden.cliente.empresa || orden.cliente.nombre} •{" "}
-                      <span className="font-mono tabular-nums">{orden.cantidad.toLocaleString("es-ES")}</span> uds
-                    </p>
-                  </div>
-
-                  {!isTvMode && (
-                    <Button asChild size="sm" variant="outline" className="h-7 text-xs rounded-md px-2.5">
-                      <Link href={`/ordenes/${orden.codigo}`}>
-                        Ver
-                      </Link>
-                    </Button>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-6 text-xs text-muted-foreground italic">
-                No hay órdenes esperando entrega en este momento.
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Próximas a vencer / Atrasadas */}
-        <Card className="border-border/80 shadow-xs">
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <div>
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-[var(--warning)]" />
-                Prioridad de Entrega (Próximas y Atrasadas)
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Ordenadas cronológicamente según fecha pactada
-              </CardDescription>
-            </div>
-            {!isTvMode && (
-              <Button asChild variant="ghost" size="sm" className="text-xs h-7">
-                <Link href="/ordenes">Ver todas</Link>
+              <Button asChild variant="ghost" size="sm" className="h-7 text-xs font-mono">
+                <Link href="/ordenes">Ver todas ({data.proximasOVencidas.length})</Link>
               </Button>
-            )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-2">
             {data.proximasOVencidas.length > 0 ? (
               data.proximasOVencidas.map((orden) => (
-                <div
+                <Link
                   key={orden.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-border/70 bg-card hover:bg-muted/40 transition-[background-color] duration-150 ease-[var(--ease-out)]"
+                  href={`/ordenes/${orden.codigo}`}
+                  className="p-3 rounded-xl border border-border/70 hover:border-primary/50 bg-card/60 transition-all flex items-center justify-between group"
                 >
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs text-foreground">
-                        {orden.codigo}
-                      </span>
-                      <span className="font-medium text-xs text-foreground truncate max-w-[180px]">
+                  <div className="flex items-center gap-3 truncate">
+                    <span className="font-mono font-bold text-xs group-hover:text-primary transition-colors">
+                      {orden.codigo}
+                    </span>
+                    <div className="truncate">
+                      <p className="text-xs font-medium text-foreground truncate">
                         {orden.titulo}
-                      </span>
+                      </p>
+                      <p className="text-[11px] text-muted-foreground truncate">
+                        {orden.cliente.empresa || orden.cliente.nombre}
+                      </p>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      {orden.cliente.empresa || orden.cliente.nombre} • {orden.tipo_trabajo.nombre}
-                    </p>
                   </div>
-
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <OtSemaphore fechaEntrega={orden.fecha_entrega} />
-                    {!isTvMode && (
-                      <Button asChild size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-md">
-                        <Link href={`/ordenes/${orden.codigo}`}>
-                          <ChevronRight className="h-3.5 w-3.5" />
-                        </Link>
-                      </Button>
-                    )}
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover:translate-x-0.5 transition-transform" />
                   </div>
-                </div>
+                </Link>
               ))
             ) : (
-              <div className="text-center py-6 text-xs text-muted-foreground italic">
-                Sin órdenes pendientes de entrega.
-              </div>
+              <p className="text-xs text-muted-foreground italic py-6 text-center">
+                No hay órdenes pendientes en este momento.
+              </p>
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Actividad Reciente */}
-      {!isTvMode && (
-        <Card className="border-border/80 shadow-xs">
+        {/* Actividad Reciente en Planta */}
+        <Card className="rounded-2xl border-border/80 shadow-xs">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Clock className="h-4 w-4 text-primary" />
-              Actividad Reciente en Planta
+            <CardTitle className="text-base font-bold flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" />
+              Eventos Recientes en Planta
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              Feed de eventos y transiciones en vivo
+            <CardDescription className="text-xs">
+              Historial de cambios de estado, pausas, secados y avances
             </CardDescription>
           </CardHeader>
           <CardContent>
             <TimelineFeed eventos={data.actividadReciente} />
           </CardContent>
         </Card>
-      )}
+      </div>
     </div>
   );
 }

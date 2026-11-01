@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { AreaRow, EstadoOT } from "@/types/database";
+import { getEstadoOtMetadata } from "@/config/estados";
 import {
   Search,
   Download,
@@ -75,14 +76,6 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
     document.body.removeChild(link);
   };
 
-  const estadoBadge: Record<EstadoOT, { label: string; className: string }> = {
-    recibida: { label: "Recibida", className: "bg-slate-500/10 text-slate-700 dark:text-slate-300" },
-    en_produccion: { label: "En Producción", className: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/20" },
-    lista_entrega: { label: "Lista para Entrega", className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20" },
-    entregada: { label: "Entregada", className: "bg-gray-500/15 text-gray-700 dark:text-gray-400" },
-    cancelada: { label: "Cancelada", className: "bg-red-500/15 text-red-700 dark:text-red-400" },
-  };
-
   return (
     <div className="space-y-4">
       {/* Barra de Filtros y Búsqueda */}
@@ -105,9 +98,10 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
             className="h-10 px-3 text-xs font-medium rounded-xl border border-input bg-background/80 text-foreground"
           >
             <option value="todas">Todos los estados</option>
+            <option value="en_puerta">En Puerta</option>
             <option value="en_produccion">En Producción</option>
-            <option value="lista_entrega">Listas para Entrega</option>
-            <option value="entregada">Entregadas</option>
+            <option value="lista_despacho">Listas para Despacho</option>
+            <option value="despachada">Despachadas</option>
           </select>
 
           {/* Selector Prioridad */}
@@ -193,7 +187,7 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
               <tbody className="divide-y divide-border/50">
                 {ordenesFiltradas.length > 0 ? (
                   ordenesFiltradas.map((o) => {
-                    const infoEstado = estadoBadge[o.estado] || estadoBadge.recibida;
+                    const infoEstado = getEstadoOtMetadata(o.estado);
 
                     return (
                       <tr
@@ -250,7 +244,7 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
                         </td>
                         <td className="py-2 px-3.5">
                           <span
-                            className={`inline-block text-[10px] px-2 py-0.5 rounded-md font-mono font-medium ${infoEstado.className}`}
+                            className={`inline-block text-[10px] px-2 py-0.5 rounded-md font-mono font-medium ${infoEstado.badgeClass}`}
                           >
                             {infoEstado.label}
                           </span>

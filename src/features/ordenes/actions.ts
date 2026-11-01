@@ -13,6 +13,11 @@ import {
   ComentarioRow,
   PrioridadOT,
   EstadoOT,
+  ProveedorRow,
+  AcabadoRow,
+  RechazoCalidadRow,
+  UsuarioAreaRow,
+  ProfileRow,
 } from "@/types/database";
 import { obtenerUsuarioActual } from "@/features/auth/actions";
 import { mockStore } from "@/lib/mock-store";
@@ -25,6 +30,8 @@ export type OrdenConRelaciones = OrdenRow & {
   etapas?: (OrdenEtapaRow & { area: AreaRow })[];
   eventos?: EventoOrdenRow[];
   comentarios?: ComentarioRow[];
+  acabados_rel?: AcabadoRow[];
+  rechazos?: RechazoCalidadRow[];
 };
 
 export async function crearOrdenAction(input: CrearOrdenInput): Promise<{
@@ -40,7 +47,7 @@ export async function crearOrdenAction(input: CrearOrdenInput): Promise<{
   const data = result.data;
   const { profile } = await obtenerUsuarioActual();
 
-  if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured()) {
     try {
       const supabase = await createClient();
       const { data: resRpc, error } = await supabase.rpc("crear_orden", {
@@ -56,6 +63,8 @@ export async function crearOrdenAction(input: CrearOrdenInput): Promise<{
         p_prioridad: data.prioridad,
         p_fecha_entrega: data.fecha_entrega,
         p_ruta: data.ruta,
+        p_usa_planchas_existentes: data.usa_planchas_existentes ?? false,
+        p_acabados_ids: data.acabado_ids || null,
       });
 
       if (!error && resRpc && typeof resRpc === "object") {
@@ -84,6 +93,9 @@ export async function crearOrdenAction(input: CrearOrdenInput): Promise<{
     fecha_entrega: data.fecha_entrega,
     ruta: data.ruta,
     creada_por: profile?.id,
+    usa_planchas_existentes: data.usa_planchas_existentes,
+    acabado_ids: data.acabado_ids,
+    notas_acabado: data.notas_acabado,
   });
 
   revalidatePath("/dashboard");
@@ -143,12 +155,20 @@ export async function obtenerOrdenes(filtros?: {
       updated_at: "",
     };
     const area = mockStore.areas.find((a) => a.id === o.area_actual_id) || null;
+    const etapas = mockStore.etapas
+      .filter((e) => e.orden_id === o.id)
+      .map((e) => ({
+        ...e,
+        area: mockStore.areas.find((a) => a.id === e.area_id)!,
+      }))
+      .sort((a, b) => a.secuencia - b.secuencia);
 
     return {
       ...o,
       cliente,
       tipo_trabajo: tipo,
       area_actual: area,
+      etapas,
     } as OrdenConRelaciones;
   });
 
@@ -209,11 +229,36 @@ export async function obtenerOrdenPorCodigo(codigo: string): Promise<OrdenConRel
           .eq("orden_id", data.id)
           .order("created_at", { ascending: true });
 
+        // Obtener acabados
+        const { data: ordenAcabados } = await supabase
+          .from("orden_acabados")
+          .select("acabado_id")
+          .eq("orden_id", data.id);
+
+        const acIds = (ordenAcabados || []).map((oa) => oa.acabado_id);
+        let acabadosRel: AcabadoRow[] = [];
+        if (acIds.length > 0) {
+          const { data: acData } = await supabase
+            .from("acabados")
+            .select("*")
+            .in("id", acIds);
+          acabadosRel = (acData || []) as AcabadoRow[];
+        }
+
+        // Obtener rechazos de calidad
+        const { data: rechazos } = await supabase
+          .from("rechazos_calidad")
+          .select("*")
+          .eq("orden_id", data.id)
+          .order("created_at", { ascending: false });
+
         return {
           ...(data as unknown as OrdenConRelaciones),
           etapas: etapas as unknown as (OrdenEtapaRow & { area: AreaRow })[],
           eventos: eventos || [],
           comentarios: comentarios || [],
+          acabados_rel: acabadosRel,
+          rechazos: rechazos || [],
         };
       }
     } catch {
@@ -263,6 +308,13 @@ export async function obtenerOrdenPorCodigo(codigo: string): Promise<OrdenConRel
     .filter((c) => c.orden_id === orden.id)
     .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
+  const acabadosRel = mockStore.ordenAcabados
+    .filter((oa) => oa.orden_id === orden.id)
+    .map((oa) => mockStore.acabados.find((a) => a.id === oa.acabado_id))
+    .filter(Boolean) as AcabadoRow[];
+
+  const rechazos = mockStore.rechazosCalidad.filter((r) => r.orden_id === orden.id);
+
   return {
     ...orden,
     cliente,
@@ -271,25 +323,70 @@ export async function obtenerOrdenPorCodigo(codigo: string): Promise<OrdenConRel
     etapas,
     eventos,
     comentarios,
+    acabados_rel: acabadosRel,
+    rechazos,
   };
 }
 
-export async function marcarEntregadaAction(
-  ordenId: string,
-  entregadaA: string
-): Promise<{ ok: boolean; error?: string }> {
+export async function liberarOrdenAction(ordenId: string): Promise<{ ok: boolean; error?: string }> {
   const { profile } = await obtenerUsuarioActual();
 
   if (isSupabaseConfigured()) {
     try {
       const supabase = await createClient();
-      const { data, error } = await supabase.rpc("marcar_entregada", {
+      const { data, error } = await supabase.rpc("liberar_orden", {
         p_orden_id: ordenId,
-        p_entregada_a: entregadaA,
       });
 
       if (!error && data) {
         revalidatePath("/dashboard");
+        revalidatePath("/ordenes");
+        revalidatePath(`/ordenes`, "layout");
+        revalidatePath("/area", "layout");
+        return { ok: true };
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  try {
+    mockStore.liberarOrden(ordenId, profile?.id);
+    revalidatePath("/dashboard");
+    revalidatePath("/ordenes");
+    revalidatePath(`/ordenes`, "layout");
+    revalidatePath("/area", "layout");
+    return { ok: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al liberar orden";
+    return { ok: false, error: message };
+  }
+}
+
+export async function despacharOrdenAction(
+  ordenId: string,
+  despachadaA: string,
+  transportista?: string | null,
+  guiaDespacho?: string | null
+): Promise<{ ok: boolean; error?: string }> {
+  if (!despachadaA.trim()) {
+    return { ok: false, error: "El nombre de quien retira o recibe es obligatorio" };
+  }
+  const { profile } = await obtenerUsuarioActual();
+
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase.rpc("despachar", {
+        p_orden_id: ordenId,
+        p_guia_despacho: guiaDespacho || null,
+        p_despachada_a: despachadaA.trim(),
+        p_transportista: transportista || null,
+      });
+
+      if (!error && data) {
+        revalidatePath("/dashboard");
+        revalidatePath("/despachos");
         revalidatePath("/entregas");
         revalidatePath("/ordenes");
         return { ok: true };
@@ -300,15 +397,23 @@ export async function marcarEntregadaAction(
   }
 
   try {
-    mockStore.marcarEntregada(ordenId, entregadaA, profile?.id);
+    mockStore.despachar(ordenId, guiaDespacho, despachadaA, profile?.id);
     revalidatePath("/dashboard");
+    revalidatePath("/despachos");
     revalidatePath("/entregas");
     revalidatePath("/ordenes");
     return { ok: true };
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error al entregar orden";
+    const message = err instanceof Error ? err.message : "Error al despachar orden";
     return { ok: false, error: message };
   }
+}
+
+export async function marcarEntregadaAction(
+  ordenId: string,
+  entregadaA: string
+): Promise<{ ok: boolean; error?: string }> {
+  return despacharOrdenAction(ordenId, entregadaA, null, null);
 }
 
 export async function agregarComentarioAction(
@@ -343,4 +448,292 @@ export async function agregarComentarioAction(
   mockStore.agregarComentario(ordenId, texto.trim(), profile?.id);
   revalidatePath(`/ordenes`, "layout");
   return { ok: true };
+}
+
+export async function obtenerProveedores(): Promise<ProveedorRow[]> {
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from("proveedores")
+        .select("*")
+        .order("nombre", { ascending: true });
+
+      if (!error && data) {
+        return data as ProveedorRow[];
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  return [...mockStore.proveedores];
+}
+
+export async function obtenerAcabados(): Promise<AcabadoRow[]> {
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { data, error } = await supabase
+        .from("acabados")
+        .select("*")
+        .order("nombre", { ascending: true });
+
+      if (!error && data) {
+        return data as AcabadoRow[];
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  return [...mockStore.acabados];
+}
+
+export async function crearProveedorAction(data: {
+  nombre: string;
+  telefono?: string | null;
+  tipo?: ProveedorRow["tipo"];
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!data.nombre.trim()) return { ok: false, error: "El nombre es obligatorio" };
+
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { error } = await supabase.from("proveedores").insert({
+        nombre: data.nombre.trim(),
+        telefono: data.telefono || null,
+        tipo: data.tipo || "otros",
+        activo: true,
+      });
+      if (!error) {
+        revalidatePath("/configuracion");
+        return { ok: true };
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  try {
+    mockStore.crearProveedor(data);
+    revalidatePath("/configuracion");
+    return { ok: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al crear proveedor";
+    return { ok: false, error: message };
+  }
+}
+
+export async function actualizarProveedorAction(
+  id: string,
+  data: Partial<ProveedorRow>
+): Promise<{ ok: boolean; error?: string }> {
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { id: _id, ...updatePayload } = data;
+      const { error } = await supabase.from("proveedores").update(updatePayload).eq("id", id);
+      if (!error) {
+        revalidatePath("/configuracion");
+        return { ok: true };
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  try {
+    mockStore.actualizarProveedor(id, data);
+    revalidatePath("/configuracion");
+    return { ok: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al actualizar proveedor";
+    return { ok: false, error: message };
+  }
+}
+
+export async function crearAcabadoAction(data: {
+  nombre: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!data.nombre.trim()) return { ok: false, error: "El nombre del acabado es obligatorio" };
+
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { error } = await supabase.from("acabados").insert({
+        nombre: data.nombre.trim(),
+        activo: true,
+      });
+      if (!error) {
+        revalidatePath("/configuracion");
+        return { ok: true };
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  try {
+    mockStore.crearAcabado(data);
+    revalidatePath("/configuracion");
+    return { ok: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al crear acabado";
+    return { ok: false, error: message };
+  }
+}
+
+export async function actualizarAcabadoAction(
+  id: string,
+  data: Partial<AcabadoRow>
+): Promise<{ ok: boolean; error?: string }> {
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { id: _id, ...updatePayload } = data;
+      const { error } = await supabase.from("acabados").update(updatePayload).eq("id", id);
+      if (!error) {
+        revalidatePath("/configuracion");
+        return { ok: true };
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  try {
+    mockStore.actualizarAcabado(id, data);
+    revalidatePath("/configuracion");
+    return { ok: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al actualizar acabado";
+    return { ok: false, error: message };
+  }
+}
+
+export async function actualizarAreaFlagsAction(
+  areaId: string,
+  flags: {
+    tipo_espera?: AreaRow["tipo_espera"];
+    requiere_aprobacion_cliente?: boolean;
+    es_condicional?: boolean;
+    es_control_calidad?: boolean;
+    es_despacho?: boolean;
+  }
+): Promise<{ ok: boolean; error?: string }> {
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { error } = await supabase.from("areas").update(flags).eq("id", areaId);
+      if (!error) {
+        revalidatePath("/configuracion");
+        revalidatePath("/area", "layout");
+        return { ok: true };
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  try {
+    mockStore.actualizarAreaFlags(areaId, flags);
+    revalidatePath("/configuracion");
+    revalidatePath("/area", "layout");
+    return { ok: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al actualizar flags del área";
+    return { ok: false, error: message };
+  }
+}
+
+export async function asignarAreasUsuarioAction(
+  usuarioId: string,
+  areaIds: string[]
+): Promise<{ ok: boolean; error?: string }> {
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      // Eliminar actuales
+      await supabase.from("usuario_areas").delete().eq("usuario_id", usuarioId);
+      // Insertar nuevas
+      if (areaIds.length > 0) {
+        const now = new Date().toISOString();
+        await supabase
+          .from("usuario_areas")
+          .insert(areaIds.map((areaId) => ({ usuario_id: usuarioId, area_id: areaId, created_at: now })));
+      }
+      revalidatePath("/configuracion");
+      return { ok: true };
+    } catch {
+      // Fallback
+    }
+  }
+
+  try {
+    mockStore.asignarAreasUsuario(usuarioId, areaIds);
+    revalidatePath("/configuracion");
+    return { ok: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Error al asignar áreas al usuario";
+    return { ok: false, error: message };
+  }
+}
+
+export async function obtenerUsuariosConAreas(): Promise<
+  (ProfileRow & { area?: AreaRow | null; areas_asignadas: AreaRow[] })[]
+> {
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createClient();
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("*")
+        .order("nombre_completo", { ascending: true });
+
+      const { data: usuarioAreas } = await supabase
+        .from("usuario_areas")
+        .select("usuario_id, area_id");
+
+      const { data: areasData } = await supabase
+        .from("areas")
+        .select("*");
+
+      const allAreas = (areasData || []) as AreaRow[];
+
+      if (profiles) {
+        return (profiles as ProfileRow[]).map((p) => {
+          const userAreaIds = (usuarioAreas || [])
+            .filter((ua) => ua.usuario_id === p.id)
+            .map((ua) => ua.area_id);
+
+          const userAreas = allAreas.filter((a) => userAreaIds.includes(a.id));
+          const mainArea = userAreas[0] || null;
+
+          return {
+            ...p,
+            area: mainArea,
+            areas_asignadas: userAreas,
+          };
+        });
+      }
+    } catch {
+      // Fallback
+    }
+  }
+
+  return mockStore.perfiles.map((p) => {
+    const userAreas = mockStore.usuarioAreas
+      .filter((ua) => ua.usuario_id === p.id)
+      .map((ua) => mockStore.areas.find((a) => a.id === ua.area_id))
+      .filter(Boolean) as AreaRow[];
+
+    const mainArea = userAreas[0] || null;
+
+    return {
+      ...p,
+      area: mainArea,
+      areas_asignadas: userAreas,
+    };
+  });
 }

@@ -1,10 +1,33 @@
 export type RolUsuario = "admin" | "recepcion" | "supervisor" | "operador";
 export type PrioridadOT = "baja" | "normal" | "alta" | "urgente";
-export type EstadoOT = "recibida" | "en_produccion" | "lista_entrega" | "entregada" | "cancelada";
-export type EstadoEtapa = "bloqueada" | "en_cola" | "en_proceso" | "pausada" | "esperando_cliente" | "terminada";
+export type FaseArea = "pre_prensa" | "prensa" | "post_prensa";
+export type TipoEspera = "ninguna" | "cliente" | "proveedor" | "secado";
+
+export type EstadoOT =
+  | "en_puerta"
+  | "en_produccion"
+  | "lista_despacho"
+  | "despachada"
+  | "cancelada"
+  | "recibida"      // Retrocompatibilidad
+  | "lista_entrega"  // Retrocompatibilidad
+  | "entregada";    // Retrocompatibilidad
+
+export type EstadoEtapa =
+  | "bloqueada"
+  | "en_cola"
+  | "en_proceso"
+  | "pausada"
+  | "esperando_cliente"
+  | "esperando_proveedor"
+  | "secando"
+  | "omitida"
+  | "terminada";
+
 export type EstadoAprobacion = "pendiente" | "aprobado" | "cambios_solicitados" | "expirado";
 export type TipoModeloEmpaque = "caja_tuck_end" | "caja_pizza" | "bolsa_kraft";
 export type TipoHotStamping = "ninguno" | "oro" | "plata" | "cobre";
+export type TipoProveedor = "planchas" | "papel" | "otros";
 
 export type Json =
   | string
@@ -21,7 +44,12 @@ export type AreaRow = {
   color_hex: string;
   icono_lucide: string;
   orden: number;
+  fase: FaseArea;
+  tipo_espera: TipoEspera | null;
   requiere_aprobacion_cliente: boolean;
+  es_control_calidad: boolean;
+  es_despacho: boolean;
+  es_condicional: boolean;
   activa: boolean;
   created_at: string;
   updated_at: string;
@@ -32,10 +60,50 @@ export type ProfileRow = {
   nombre_completo: string;
   usuario: string;
   rol: RolUsuario;
-  area_id: string | null;
   activo: boolean;
   created_at: string;
   updated_at: string;
+};
+
+export type UsuarioAreaRow = {
+  usuario_id: string;
+  area_id: string;
+  created_at: string;
+};
+
+export type ProveedorRow = {
+  id: string;
+  nombre: string;
+  telefono: string | null;
+  tipo: TipoProveedor;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AcabadoRow = {
+  id: string;
+  nombre: string;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OrdenAcabadoRow = {
+  orden_id: string;
+  acabado_id: string;
+  created_at: string;
+};
+
+export type RechazoCalidadRow = {
+  id: string;
+  orden_id: string;
+  etapa_qc_id: string;
+  area_destino_id: string;
+  motivo: string;
+  cantidad_afectada: number | null;
+  usuario_id: string | null;
+  created_at: string;
 };
 
 export type IntentoLoginRow = {
@@ -94,8 +162,15 @@ export type OrdenRow = {
   estado: EstadoOT;
   area_actual_id: string | null;
   creada_por: string | null;
-  entregada_en: string | null;
-  entregada_a: string | null;
+  usa_planchas_existentes?: boolean;
+  notas_acabado?: string | null;
+  liberada_en?: string | null;
+  liberada_por?: string | null;
+  despachada_en?: string | null;
+  despachada_a?: string | null;
+  guia_despacho?: string | null;
+  entregada_en?: string | null; // Retrocompatibilidad
+  entregada_a?: string | null;  // Retrocompatibilidad
   created_at: string;
   updated_at: string;
 };
@@ -112,6 +187,14 @@ export type OrdenEtapaRow = {
   motivo_pausa_id: string | null;
   nota_pausa: string | null;
   minutos_trabajados: number;
+  proveedor_id?: string | null;
+  enviado_proveedor_en?: string | null;
+  recibido_proveedor_en?: string | null;
+  guia_salida?: string | null;
+  guia_retorno?: string | null;
+  secado_hasta?: string | null;
+  intento?: number;
+  omitida_motivo?: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -202,15 +285,48 @@ export type Database = {
           updated_at?: string;
         };
         Update: Partial<Omit<ProfileRow, "id">>;
-        Relationships: [
-          {
-            foreignKeyName: "profiles_area_id_fkey";
-            columns: ["area_id"];
-            isOneToOne: false;
-            referencedRelation: "areas";
-            referencedColumns: ["id"];
-          }
-        ];
+        Relationships: [];
+      };
+      usuario_areas: {
+        Row: UsuarioAreaRow;
+        Insert: UsuarioAreaRow;
+        Update: Partial<UsuarioAreaRow>;
+        Relationships: [];
+      };
+      proveedores: {
+        Row: ProveedorRow;
+        Insert: Omit<ProveedorRow, "id" | "created_at" | "updated_at"> & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<ProveedorRow, "id">>;
+        Relationships: [];
+      };
+      acabados: {
+        Row: AcabadoRow;
+        Insert: Omit<AcabadoRow, "id" | "created_at" | "updated_at"> & {
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Omit<AcabadoRow, "id">>;
+        Relationships: [];
+      };
+      orden_acabados: {
+        Row: OrdenAcabadoRow;
+        Insert: OrdenAcabadoRow;
+        Update: Partial<OrdenAcabadoRow>;
+        Relationships: [];
+      };
+      rechazos_calidad: {
+        Row: RechazoCalidadRow;
+        Insert: Omit<RechazoCalidadRow, "id" | "created_at"> & {
+          id?: string;
+          created_at?: string;
+        };
+        Update: Partial<Omit<RechazoCalidadRow, "id">>;
+        Relationships: [];
       };
       intentos_login: {
         Row: IntentoLoginRow;
@@ -326,6 +442,10 @@ export type Database = {
         Args: Record<string, never>;
         Returns: RolUsuario | null;
       };
+      auth_areas: {
+        Args: Record<string, never>;
+        Returns: string[];
+      };
       auth_area: {
         Args: Record<string, never>;
         Returns: string | null;
@@ -358,6 +478,15 @@ export type Database = {
           p_prioridad: PrioridadOT;
           p_fecha_entrega: string;
           p_ruta?: string[] | null;
+          p_acabados_ids?: string[] | null;
+          p_usa_planchas_existentes?: boolean;
+          p_notas_acabado?: string | null;
+        };
+        Returns: Json;
+      };
+      liberar_orden: {
+        Args: {
+          p_orden_id: string;
         };
         Returns: Json;
       };
@@ -381,9 +510,59 @@ export type Database = {
         };
         Returns: Json;
       };
+      enviar_a_proveedor: {
+        Args: {
+          p_etapa_id: string;
+          p_proveedor_id: string;
+        };
+        Returns: Json;
+      };
+      recibir_de_proveedor: {
+        Args: {
+          p_etapa_id: string;
+        };
+        Returns: Json;
+      };
+      iniciar_secado: {
+        Args: {
+          p_etapa_id: string;
+          p_horas: number;
+        };
+        Returns: Json;
+      };
       terminar_etapa: {
         Args: {
           p_etapa_id: string;
+        };
+        Returns: Json;
+      };
+      omitir_etapa: {
+        Args: {
+          p_etapa_id: string;
+          p_motivo: string;
+        };
+        Returns: Json;
+      };
+      aprobar_calidad: {
+        Args: {
+          p_etapa_id: string;
+        };
+        Returns: Json;
+      };
+      rechazar_calidad: {
+        Args: {
+          p_etapa_id: string;
+          p_area_destino_id: string;
+          p_motivo: string;
+          p_cantidad?: number | null;
+        };
+        Returns: Json;
+      };
+      despachar: {
+        Args: {
+          p_orden_id: string;
+          p_despachada_a: string;
+          p_guia?: string | null;
         };
         Returns: Json;
       };
@@ -425,6 +604,8 @@ export type Database = {
     Enums: {
       rol_usuario: RolUsuario;
       prioridad_ot: PrioridadOT;
+      fase_area: FaseArea;
+      tipo_espera: TipoEspera;
       estado_ot: EstadoOT;
       estado_etapa: EstadoEtapa;
       estado_aprobacion: EstadoAprobacion;

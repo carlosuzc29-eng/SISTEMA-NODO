@@ -39,8 +39,8 @@ export function Sidebar({ profile }: SidebarProps) {
       visible: true,
     },
     {
-      label: "Entregas y Despacho",
-      href: "/entregas",
+      label: "Despachos",
+      href: "/despachos",
       icon: Truck,
       visible: true,
     },

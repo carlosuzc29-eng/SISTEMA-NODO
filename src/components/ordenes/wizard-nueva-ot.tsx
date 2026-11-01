@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { RouteBuilder } from "./route-builder";
-import { ClienteRow, TipoTrabajoRow, AreaRow, PrioridadOT } from "@/types/database";
+import { ClienteRow, TipoTrabajoRow, AreaRow, PrioridadOT, AcabadoRow } from "@/types/database";
 import { crearOrdenAction } from "@/features/ordenes/actions";
 import { crearCliente } from "@/features/clientes/actions";
 import { toast } from "sonner";
@@ -23,18 +24,32 @@ import {
   AlertTriangle,
   Loader2,
   FileCheck2,
+  Sparkles,
+  DoorOpen,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface WizardNuevaOtProps {
   clientes: ClienteRow[];
   tiposTrabajo: TipoTrabajoRow[];
   areas: AreaRow[];
+  acabadosDisponibles?: AcabadoRow[];
 }
 
-export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtProps) {
+export function WizardNuevaOt({
+  clientes,
+  tiposTrabajo,
+  areas,
+  acabadosDisponibles = [],
+}: WizardNuevaOtProps) {
   const router = useRouter();
   const [paso, setPaso] = useState<1 | 2 | 3>(1);
   const [isPending, startTransition] = useTransition();
+
+  // Planchas area helper
+  const areaPlanchas = areas.find(
+    (a) => a.slug === "planchas" || a.nombre.toLowerCase().includes("planchas")
+  );
 
   // Estado del Formulario
   const [clienteId, setClienteId] = useState(clientes[0]?.id || "");
@@ -45,7 +60,9 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
   const [material, setMaterial] = useState("Cartulina Sulfatada 14 pts");
   const [medidas, setMedidas] = useState("60 x 60 x 140 mm");
   const [tintas, setTintas] = useState("4/0 (CMYK)");
-  const [acabados, setAcabados] = useState("Barniz UV brillante");
+  const [acabadosText, setAcabadosText] = useState("");
+  const [acabadosSeleccionados, setAcabadosSeleccionados] = useState<string[]>([]);
+  const [usaPlanchasExistentes, setUsaPlanchasExistentes] = useState(false);
   const [prioridad, setPrioridad] = useState<PrioridadOT>("normal");
   const [fechaEntrega, setFechaEntrega] = useState(() => {
     const d = new Date();
@@ -69,8 +86,42 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
     setTipoTrabajoId(id);
     const tipo = tiposTrabajo.find((t) => t.id === id);
     if (tipo && tipo.ruta && tipo.ruta.length > 0) {
-      setRuta(tipo.ruta);
+      if (usaPlanchasExistentes && areaPlanchas) {
+        setRuta(tipo.ruta.filter((aId) => aId !== areaPlanchas.id));
+      } else {
+        setRuta(tipo.ruta);
+      }
     }
+  };
+
+  const handleTogglePlanchas = (checked: boolean) => {
+    setUsaPlanchasExistentes(checked);
+    if (!areaPlanchas) return;
+
+    if (checked) {
+      // Omitir automáticamente área de Planchas de la ruta
+      setRuta((prev) => prev.filter((id) => id !== areaPlanchas.id));
+      toast.info("Planchas CTP omitidas de la ruta de producción.");
+    } else {
+      // Reinsertar planchas respetando su posición por orden
+      if (!ruta.includes(areaPlanchas.id)) {
+        const nuevaRuta = [...ruta, areaPlanchas.id].sort((aId, bId) => {
+          const a = areas.find((ar) => ar.id === aId);
+          const b = areas.find((ar) => ar.id === bId);
+          return (a?.orden || 99) - (b?.orden || 99);
+        });
+        setRuta(nuevaRuta);
+        toast.info("Estación de Planchas reincorporada a la ruta.");
+      }
+    }
+  };
+
+  const handleToggleAcabado = (acabadoId: string) => {
+    setAcabadosSeleccionados((prev) =>
+      prev.includes(acabadoId)
+        ? prev.filter((id) => id !== acabadoId)
+        : [...prev, acabadoId]
+    );
   };
 
   const handleCrearRapidoCliente = async (e: React.FormEvent) => {
@@ -100,19 +151,14 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
     });
   };
 
-  const handleFinalizar = () => {
+  const handleCrearOrden = () => {
     if (!clienteId) {
-      toast.error("Por favor selecciona un cliente");
+      toast.error("Selecciona un cliente");
       setPaso(1);
       return;
     }
-    if (!titulo.trim()) {
-      toast.error("Por favor ingresa un título para la orden");
-      setPaso(2);
-      return;
-    }
-    if (!cantidad || Number(cantidad) <= 0) {
-      toast.error("La cantidad debe ser mayor a 0");
+    if (!titulo.trim() || !cantidad || !material.trim()) {
+      toast.error("Completa las especificaciones de la orden");
       setPaso(2);
       return;
     }
@@ -121,6 +167,17 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
       setPaso(3);
       return;
     }
+
+    // Combinar nombres de acabados seleccionados con el texto manual
+    const nombresAcabados = acabadosSeleccionados
+      .map((id) => acabadosDisponibles.find((a) => a.id === id)?.nombre)
+      .filter(Boolean);
+    const acabadosFinales = [
+      ...nombresAcabados,
+      acabadosText.trim(),
+    ]
+      .filter(Boolean)
+      .join(", ");
 
     startTransition(async () => {
       const res = await crearOrdenAction({
@@ -132,14 +189,17 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
         material: material.trim(),
         medidas: medidas.trim(),
         tintas: tintas.trim(),
-        acabados: acabados.trim() || null,
+        acabados: acabadosFinales || null,
+        usa_planchas_existentes: usaPlanchasExistentes,
+        acabado_ids: acabadosSeleccionados,
+        notas_acabado: acabadosText.trim() || null,
         prioridad,
         fecha_entrega: fechaEntrega,
         ruta,
       });
 
       if (res.ok && res.codigo) {
-        toast.success(`¡Orden ${res.codigo} creada con éxito!`);
+        toast.success(`¡Orden ${res.codigo} creada en estado En Puerta! 🎉`);
         router.push(`/ordenes/${res.codigo}`);
       } else {
         toast.error(res.error || "Error al crear la orden de trabajo");
@@ -153,74 +213,73 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
   return (
     <div className="max-w-3xl mx-auto space-y-5">
       {/* Barra de progreso continuo */}
-      <div className="relative h-1 w-full bg-border/60 rounded-full overflow-hidden">
+      <div className="relative h-1.5 w-full bg-border/60 rounded-full overflow-hidden">
         <div
           className="absolute inset-y-0 left-0 w-full bg-primary origin-left transition-transform duration-250 ease-[var(--ease-out)]"
           style={{ transform: `scaleX(${paso === 1 ? 0.33 : paso === 2 ? 0.66 : 1})` }}
         />
       </div>
 
-      {/* Indicador de Pasos del Asistente */}
-      <div className="grid grid-cols-3 gap-2.5">
+      {/* Indicadores de Pasos */}
+      <div className="grid grid-cols-3 gap-2">
         {[
-          { num: 1, label: "Cliente", desc: "Selección o registro" },
-          { num: 2, label: "Especificaciones", desc: "Ficha técnica" },
-          { num: 3, label: "Ruta y Entrega", desc: "Estaciones y plazos" },
-        ].map((p) => {
-          const isActive = paso === p.num;
-          const isDone = paso > p.num;
+          { num: 1, label: "Cliente", desc: "Datos del solicitante" },
+          { num: 2, label: "Especificaciones", desc: "Material, tiraje y acabados" },
+          { num: 3, label: "Ruta y Plazos", desc: "11 estaciones y entrega" },
+        ].map((s) => {
+          const isActive = paso === s.num;
+          const isDone = paso > s.num;
 
           return (
-            <div
-              key={p.num}
-              onClick={() => isDone && setPaso(p.num as 1 | 2 | 3)}
-              className={`p-3 rounded-xl border transition-[border-color,background-color] duration-150 ease-[var(--ease-out)] cursor-pointer ${
+            <button
+              key={s.num}
+              type="button"
+              onClick={() => setPaso(s.num as 1 | 2 | 3)}
+              className={cn(
+                "p-3 rounded-2xl border text-left transition-all",
                 isActive
-                  ? "bg-card border-primary/60 shadow-xs ring-1 ring-primary/20"
+                  ? "bg-primary/10 border-primary ring-1 ring-primary/30"
                   : isDone
-                  ? "bg-card/60 border-[var(--success)]/40 hover:border-[var(--success)]/70"
-                  : "bg-muted/20 border-border/60 opacity-60 pointer-events-none"
-              }`}
+                  ? "bg-card border-border hover:border-primary/40"
+                  : "bg-muted/20 border-border/60 opacity-60"
+              )}
             >
               <div className="flex items-center gap-2">
                 <span
-                  className={`h-5 w-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold ${
-                    isDone
-                      ? "bg-[var(--success)] text-[var(--success-foreground)]"
-                      : isActive
+                  className={cn(
+                    "h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+                    isActive
                       ? "bg-primary text-primary-foreground"
+                      : isDone
+                      ? "bg-emerald-500 text-white"
                       : "bg-muted text-muted-foreground"
-                  }`}
+                  )}
                 >
-                  {isDone ? <Check className="h-3 w-3 stroke-[2.5]" /> : p.num}
+                  {isDone ? <Check className="h-3 w-3" /> : s.num}
                 </span>
-                <span className="font-medium text-xs text-foreground font-mono">
-                  {p.label}
-                </span>
+                <span className="font-bold text-xs text-foreground">{s.label}</span>
               </div>
-              <span className="text-[10px] text-muted-foreground block mt-1 truncate">
-                {p.desc}
-              </span>
-            </div>
+              <p className="text-[10px] text-muted-foreground mt-1 truncate">{s.desc}</p>
+            </button>
           );
         })}
       </div>
 
-      <Card className="border-border/80 shadow-xs backdrop-blur-sm bg-card/95">
+      <Card className="rounded-2xl border border-border/80 shadow-xs">
         {/* PASO 1: CLIENTE */}
         {paso === 1 && (
           <>
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
                 <User className="h-5 w-5 text-primary" />
-                Paso 1: Seleccionar Cliente
+                Paso 1: Seleccionar o Crear Cliente
               </CardTitle>
               <CardDescription>
-                Elige el cliente para esta orden de producción o registra uno nuevo rápidamente.
+                Indica la empresa o persona que solicita la orden de producción.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Clientes Registrados ({clientes.length})
                 </label>
@@ -229,55 +288,99 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
                   variant="outline"
                   size="sm"
                   onClick={() => setShowModalCliente(true)}
-                  className="rounded-xl h-8 text-xs font-medium"
+                  className="h-8 text-xs rounded-xl gap-1.5"
                 >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  Nuevo Cliente
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Nuevo Cliente Rápido</span>
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1">
+              {/* Lista de Clientes en Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-80 overflow-y-auto pr-1">
                 {clientes.map((c) => {
                   const isSelected = clienteId === c.id;
                   return (
-                    <div
+                    <button
                       key={c.id}
+                      type="button"
                       onClick={() => setClienteId(c.id)}
-                      className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${
+                      className={cn(
+                        "p-3.5 rounded-xl border text-left transition-all",
                         isSelected
                           ? "bg-primary/10 border-primary ring-1 ring-primary/30"
                           : "bg-card border-border/70 hover:border-primary/40"
-                      }`}
+                      )}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-sm text-foreground">
+                        <span className="font-bold text-xs text-foreground truncate">
                           {c.empresa || c.nombre}
                         </span>
-                        {isSelected && (
-                          <span className="h-5 w-5 rounded-full bg-primary text-white flex items-center justify-center text-xs">
-                            <Check className="h-3 w-3" />
-                          </span>
-                        )}
+                        {isSelected && <Check className="h-4 w-4 text-primary shrink-0" />}
                       </div>
                       {c.empresa && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
+                        <p className="text-[11px] text-muted-foreground truncate mt-0.5">
                           Contacto: {c.nombre}
                         </p>
                       )}
                       {c.telefono && (
-                        <p className="text-[11px] text-muted-foreground mt-1 font-mono">
+                        <p className="text-[10px] font-mono text-muted-foreground/80 mt-1">
                           {c.telefono}
                         </p>
                       )}
-                    </div>
+                    </button>
                   );
                 })}
               </div>
+
+              {/* Modal Rápido de Nuevo Cliente */}
+              {showModalCliente && (
+                <div className="p-4 rounded-2xl border border-primary/30 bg-primary/5 space-y-3">
+                  <span className="text-xs font-bold text-foreground block">
+                    Registrar Nuevo Cliente Rápido
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <Input
+                      placeholder="Nombre de la persona *"
+                      value={nuevoNombreCliente}
+                      onChange={(e) => setNuevoNombreCliente(e.target.value)}
+                      className="text-xs"
+                    />
+                    <Input
+                      placeholder="Empresa o Razón Social"
+                      value={nuevaEmpresaCliente}
+                      onChange={(e) => setNuevaEmpresaCliente(e.target.value)}
+                      className="text-xs"
+                    />
+                    <Input
+                      placeholder="Teléfono / WhatsApp"
+                      value={nuevoTelefonoCliente}
+                      onChange={(e) => setNuevoTelefonoCliente(e.target.value)}
+                      className="text-xs font-mono"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-1">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowModalCliente(false)}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleCrearRapidoCliente}
+                      disabled={isPending || !nuevoNombreCliente.trim()}
+                    >
+                      Guardar Cliente
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
             <CardFooter className="flex justify-between border-t border-border/60 pt-4">
-              <Button variant="ghost" disabled>
-                Atrás
-              </Button>
+              <div />
               <Button
                 type="button"
                 disabled={!clienteId}
@@ -300,14 +403,14 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
                 Paso 2: Especificaciones del Trabajo
               </CardTitle>
               <CardDescription>
-                Define el tipo de producto, medidas, materiales y tiraje de impresión.
+                Define el tipo de producto, medidas, materiales, tintas y acabados especiales.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Tipo de Trabajo */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Tipo de Trabajo
+                  Tipo de Trabajo Base
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {tiposTrabajo.map((tipo) => {
@@ -317,17 +420,18 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
                         key={tipo.id}
                         type="button"
                         onClick={() => handleTipoTrabajoChange(tipo.id)}
-                        className={`p-3 rounded-xl border text-left transition-all ${
+                        className={cn(
+                          "p-3 rounded-xl border text-left transition-all",
                           isSelected
-                            ? "bg-primary/10 border-primary font-semibold text-primary"
-                            : "bg-muted/30 border-border/70 hover:border-primary/40 text-foreground"
-                        }`}
+                            ? "bg-primary/10 border-primary font-semibold text-primary ring-1 ring-primary/30"
+                            : "bg-card border-border/70 hover:border-primary/40 text-foreground"
+                        )}
                       >
                         <span className="text-xs block font-bold truncate">
                           {tipo.nombre}
                         </span>
                         <span className="text-[10px] text-muted-foreground block mt-0.5">
-                          {tipo.ruta.length} estaciones
+                          {tipo.ruta.length} estaciones sugeridas
                         </span>
                       </button>
                     );
@@ -338,10 +442,10 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
               {/* Título de la Orden */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Título descriptivo del producto *
+                  Título o Descripción del Producto *
                 </label>
                 <Input
-                  placeholder="Ej. Cajas de Jarabe 120ml con Hot Stamping"
+                  placeholder="Ej. Cajas de Jarabe 120ml con Barniz UV y Hot Stamping"
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
                 />
@@ -359,6 +463,7 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
                     placeholder="1000"
                     value={cantidad}
                     onChange={(e) => setCantidad(e.target.value)}
+                    className="font-mono"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -390,23 +495,61 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
                     Tintas de Impresión *
                   </label>
                   <Input
-                    placeholder="Ej. 4/0 (Full Color frente)"
+                    placeholder="Ej. 4/0 (Full Color frente) o 4/4 CMYK"
                     value={tintas}
                     onChange={(e) => setTintas(e.target.value)}
                   />
                 </div>
               </div>
 
-              {/* Acabados y Descripción */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Acabados Especiales
+              {/* Selector Múltiple de Acabados Requeridos */}
+              <div className="space-y-2 pt-1 border-t border-border/50">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                  Acabados Requeridos (Selecciona todos los que apliquen)
                 </label>
-                <Input
-                  placeholder="Ej. Barniz UV brillante, troquelado con solapas, estampado dorado"
-                  value={acabados}
-                  onChange={(e) => setAcabados(e.target.value)}
-                />
+
+                {acabadosDisponibles.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {acabadosDisponibles.map((acabado) => {
+                      const isSelected = acabadosSeleccionados.includes(acabado.id);
+                      return (
+                        <button
+                          key={acabado.id}
+                          type="button"
+                          onClick={() => handleToggleAcabado(acabado.id)}
+                          className={cn(
+                            "px-3 py-1.5 rounded-xl border text-xs font-medium transition-all flex items-center gap-1.5",
+                            isSelected
+                              ? "bg-amber-500/15 border-amber-500 text-amber-600 dark:text-amber-400 font-bold ring-1 ring-amber-500/30"
+                              : "bg-muted/30 border-border/70 hover:border-amber-500/40 text-foreground"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "h-3.5 w-3.5 rounded flex items-center justify-center text-[9px]",
+                              isSelected
+                                ? "bg-amber-500 text-white"
+                                : "border border-muted-foreground/40"
+                            )}
+                          >
+                            {isSelected && <Check className="h-2.5 w-2.5 stroke-[3]" />}
+                          </div>
+                          <span>{acabado.nombre}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <div className="pt-1.5">
+                  <Input
+                    placeholder="Detalles adicionales de acabados (ej. Hot stamping dorado en logo frontal)"
+                    value={acabadosText}
+                    onChange={(e) => setAcabadosText(e.target.value)}
+                    className="text-xs"
+                  />
+                </div>
               </div>
             </CardContent>
             <CardFooter className="flex justify-between border-t border-border/60 pt-4">
@@ -420,7 +563,7 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
                 onClick={() => setPaso(3)}
                 className="rounded-xl px-6"
               >
-                <span>Continuar a Ruta y Entrega</span>
+                <span>Continuar a Ruta y Plazos</span>
                 <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
             </CardFooter>
@@ -433,18 +576,20 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
                 <Layers className="h-5 w-5 text-primary" />
-                Paso 3: Ruta de Producción y Plazos
+                Paso 3: Ruta de Producción y Programación
               </CardTitle>
               <CardDescription>
-                Personaliza la secuencia de áreas por las que viajará la orden y fija la fecha prometida.
+                Ajusta las 11 estaciones agrupadas en las 3 fases (Pre-prensa, Prensa, Post-prensa).
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Constructor de Ruta */}
+              {/* Constructor de Ruta Visual Adaptado */}
               <RouteBuilder
                 todasLasAreas={areas}
                 rutaSeleccionada={ruta}
                 onChange={setRuta}
+                usaPlanchasExistentes={usaPlanchasExistentes}
+                onTogglePlanchas={handleTogglePlanchas}
               />
 
               {/* Prioridad y Fecha de Entrega */}
@@ -458,6 +603,7 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
                     type="date"
                     value={fechaEntrega}
                     onChange={(e) => setFechaEntrega(e.target.value)}
+                    className="font-mono text-sm"
                   />
                 </div>
 
@@ -474,15 +620,16 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
                           key={p}
                           type="button"
                           onClick={() => setPrioridad(p)}
-                          className={`py-2 text-xs rounded-xl font-bold uppercase transition-all ${
+                          className={cn(
+                            "py-2 text-xs rounded-xl font-bold uppercase transition-all",
                             isSelected
                               ? p === "urgente"
-                                ? "bg-destructive text-destructive-foreground shadow-sm"
+                                ? "bg-destructive text-destructive-foreground shadow-xs"
                                 : p === "alta"
-                                ? "bg-amber-500 text-white shadow-sm"
-                                : "bg-primary text-primary-foreground shadow-sm"
+                                ? "bg-amber-500 text-white shadow-xs"
+                                : "bg-primary text-primary-foreground shadow-xs"
                               : "bg-muted/40 text-muted-foreground hover:bg-muted"
-                          }`}
+                          )}
                         >
                           {p}
                         </button>
@@ -493,12 +640,19 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
               </div>
 
               {/* Resumen Final de Creación */}
-              <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                  <FileCheck2 className="h-4 w-4 text-emerald-500" />
-                  Resumen de la Orden
-                </span>
-                <div className="text-xs text-muted-foreground space-y-1">
+              <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                    <FileCheck2 className="h-4 w-4 text-emerald-500" />
+                    Resumen de la Orden
+                  </span>
+                  <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] gap-1 font-semibold">
+                    <DoorOpen className="h-3 w-3" />
+                    Estado inicial: En Puerta
+                  </Badge>
+                </div>
+
+                <div className="text-xs text-muted-foreground grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <p>
                     <strong>Cliente:</strong> {clienteSeleccionado?.empresa || clienteSeleccionado?.nombre}
                   </p>
@@ -506,11 +660,21 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
                     <strong>Producto:</strong> {titulo} ({parseInt(cantidad, 10).toLocaleString()} uds)
                   </p>
                   <p>
-                    <strong>Tipo:</strong> {tipoSeleccionado?.nombre}
+                    <strong>Sustrato:</strong> {material} • {tintas}
                   </p>
                   <p>
-                    <strong>Secuencia:</strong> {ruta.length} estaciones programadas
+                    <strong>Ruta:</strong> {ruta.length} estaciones programadas
                   </p>
+                  <p>
+                    <strong>Planchas CTP:</strong> {usaPlanchasExistentes ? "Existentes (Omitidas)" : "Por Grabar"}
+                  </p>
+                  <p>
+                    <strong>Entrega:</strong> {fechaEntrega}
+                  </p>
+                </div>
+
+                <div className="text-[11px] text-muted-foreground bg-card/60 p-2.5 rounded-xl border border-border/60">
+                  ℹ️ Al guardar, la orden se creará en estado <strong>En Puerta</strong>. No avanzará a producción en planta hasta que sea liberada por Recepción o Administración.
                 </div>
               </div>
             </CardContent>
@@ -521,19 +685,19 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
               </Button>
               <Button
                 type="button"
-                disabled={isPending || ruta.length === 0}
-                onClick={handleFinalizar}
-                className="rounded-xl px-8 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md"
+                disabled={isPending || ruta.length === 0 || !fechaEntrega}
+                onClick={handleCrearOrden}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-7 font-bold shadow-xs"
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creando Orden...
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <span>Guardando Orden...</span>
                   </>
                 ) : (
                   <>
-                    <Check className="mr-2 h-4 w-4" />
-                    Crear Orden de Trabajo
+                    <DoorOpen className="h-4 w-4 mr-1.5" />
+                    <span>Crear Orden en Puerta</span>
                   </>
                 )}
               </Button>
@@ -541,62 +705,6 @@ export function WizardNuevaOt({ clientes, tiposTrabajo, areas }: WizardNuevaOtPr
           </>
         )}
       </Card>
-
-      {/* MODAL RÁPIDO PARA CREAR CLIENTE */}
-      {showModalCliente && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card rounded-2xl border border-border/80 p-6 max-w-md w-full shadow-2xl space-y-4 animate-in zoom-in-95">
-            <h3 className="font-bold text-lg text-foreground">
-              Registrar Nuevo Cliente
-            </h3>
-            <form onSubmit={handleCrearRapidoCliente} className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Nombre del Contacto *
-                </label>
-                <Input
-                  placeholder="Ej. Roberto Gómez"
-                  value={nuevoNombreCliente}
-                  onChange={(e) => setNuevoNombreCliente(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Empresa o Marca
-                </label>
-                <Input
-                  placeholder="Ej. Cosméticos BellaPiel C.A."
-                  value={nuevaEmpresaCliente}
-                  onChange={(e) => setNuevaEmpresaCliente(e.target.value)}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Teléfono de Contacto
-                </label>
-                <Input
-                  placeholder="Ej. +58 412 1234567"
-                  value={nuevoTelefonoCliente}
-                  onChange={(e) => setNuevoTelefonoCliente(e.target.value)}
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-3 border-t border-border/60">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setShowModalCliente(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  Guardar Cliente
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

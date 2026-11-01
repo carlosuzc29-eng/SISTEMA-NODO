@@ -1,5 +1,6 @@
 import { obtenerClientes } from "@/features/clientes/actions";
 import { obtenerTiposTrabajo, obtenerAreas } from "@/features/tipos-trabajo/actions";
+import { obtenerAcabados } from "@/features/ordenes/actions";
 import { WizardNuevaOt } from "@/components/ordenes/wizard-nueva-ot";
 import Link from "next/link";
 import { ArrowLeft, PlusCircle } from "lucide-react";
@@ -12,10 +13,11 @@ export const metadata = {
 };
 
 export default async function NuevaOrdenPage() {
-  const [clientes, tiposTrabajo, areas] = await Promise.all([
+  const [clientes, tiposTrabajo, areas, acabados] = await Promise.all([
     obtenerClientes(),
     obtenerTiposTrabajo(),
     obtenerAreas(),
+    obtenerAcabados(),
   ]);
 
   return (
@@ -45,6 +47,7 @@ export default async function NuevaOrdenPage() {
         clientes={clientes}
         tiposTrabajo={tiposTrabajo}
         areas={areas}
+        acabadosDisponibles={acabados}
       />
     </div>
   );

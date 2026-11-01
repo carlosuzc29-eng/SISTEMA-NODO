@@ -1,92 +1,209 @@
 "use client";
 
 import React from "react";
-import { AreaRow, OrdenEtapaRow } from "@/types/database";
-import { Check, Clock, Play, Pause, Lock } from "lucide-react";
+import { AreaRow, OrdenEtapaRow, RechazoCalidadRow, FaseArea } from "@/types/database";
+import {
+  Check,
+  Clock,
+  Play,
+  Pause,
+  Lock,
+  UserCheck,
+  Truck,
+  Timer,
+  SkipForward,
+  AlertTriangle,
+  RotateCcw,
+  ArrowRight,
+} from "lucide-react";
+import { getEstadoEtapaMetadata } from "@/config/estados";
+import { cn } from "@/lib/utils";
+
+const ICON_COMPONENTS: Record<string, React.ElementType> = {
+  Lock,
+  Clock,
+  Play,
+  Pause,
+  UserCheck,
+  Truck,
+  Timer,
+  SkipForward,
+  Check,
+};
+
+const FASES_TITULOS: Record<FaseArea, { label: string; badgeClass: string }> = {
+  pre_prensa: {
+    label: "Pre-prensa",
+    badgeClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+  },
+  prensa: {
+    label: "Prensa",
+    badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+  },
+  post_prensa: {
+    label: "Post-prensa",
+    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+  },
+};
 
 interface OtStepperProps {
   etapas: (OrdenEtapaRow & { area: AreaRow })[];
+  rechazos?: RechazoCalidadRow[];
 }
 
-export function OtStepper({ etapas }: OtStepperProps) {
+export function OtStepper({ etapas, rechazos = [] }: OtStepperProps) {
   const sorted = [...etapas].sort((a, b) => a.secuencia - b.secuencia);
+  const ultimoRechazo = rechazos.length > 0 ? rechazos[0] : null;
 
-  const total = sorted.length;
-  const terminadasCount = sorted.filter((e) => e.estado === "terminada").length;
-  const progressRatio = total > 1 ? Math.min(1, terminadasCount / (total - 1)) : 0;
+  // Encontrar el nombre del área destino del reproceso
+  const areaDestinoRechazo = ultimoRechazo
+    ? sorted.find((e) => e.area.id === ultimoRechazo.area_destino_id)?.area
+    : null;
 
-  const estadoInfo: Record<
-    string,
-    { label: string; icon: React.ElementType; badgeBg: string }
-  > = {
-    bloqueada: { label: "Bloqueada", icon: Lock, badgeBg: "bg-muted text-muted-foreground" },
-    en_cola: { label: "En cola", icon: Clock, badgeBg: "bg-muted text-foreground" },
-    en_proceso: { label: "En proceso", icon: Play, badgeBg: "bg-primary text-primary-foreground font-semibold" },
-    pausada: { label: "Pausada", icon: Pause, badgeBg: "bg-[var(--warning-subtle)] text-[var(--warning)] border border-[var(--warning)]/30" },
-    esperando_cliente: { label: "Aprobación", icon: Clock, badgeBg: "bg-[var(--info-subtle)] text-[var(--info)] border border-[var(--info)]/30" },
-    terminada: { label: "Terminada", icon: Check, badgeBg: "bg-[var(--success-subtle)] text-[var(--success)] border border-[var(--success)]/30" },
-  };
+  const fases: FaseArea[] = ["pre_prensa", "prensa", "post_prensa"];
 
   return (
-    <div className="w-full overflow-x-auto py-2">
-      <div className="min-w-[560px] flex items-center justify-between relative px-4">
-        {/* Línea conectora base */}
-        <div className="absolute top-5 left-10 right-10 h-1 bg-border/60 -z-0" />
+    <div className="space-y-4">
+      {/* Banner de Reproceso si ocurrió rechazo de calidad */}
+      {ultimoRechazo && (
+        <div className="rounded-2xl border border-destructive/40 bg-destructive/10 p-3.5 flex items-center justify-between gap-3 text-destructive animate-in fade-in-50">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-xl bg-destructive/20 flex items-center justify-center shrink-0">
+              <RotateCcw className="h-4 w-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xs uppercase tracking-wider">
+                  Reproceso de Calidad Registrado
+                </span>
+                <span className="text-[10px] font-mono bg-destructive/20 px-2 py-0.2 rounded font-bold">
+                  {new Date(ultimoRechazo.created_at).toLocaleDateString("es-ES")}
+                </span>
+              </div>
+              <p className="text-xs text-foreground font-medium mt-0.5 flex items-center gap-1.5">
+                <span>Control de Calidad</span>
+                <ArrowRight className="h-3 w-3 text-destructive" />
+                <span className="font-bold text-destructive underline">
+                  {areaDestinoRechazo?.nombre || "Estación de origen"}
+                </span>
+                <span className="text-muted-foreground font-normal">
+                  — Motivo: &quot;{ultimoRechazo.motivo}&quot;
+                </span>
+              </p>
+            </div>
+          </div>
 
-        {/* Línea conectora de progreso (scaleX con origin-left) */}
-        <div
-          className="absolute top-5 left-10 right-10 h-1 bg-[var(--success)] -z-0 origin-left transition-transform duration-300 ease-[var(--ease-out)]"
-          style={{ transform: `scaleX(${progressRatio})` }}
-        />
+          {ultimoRechazo.cantidad_afectada && (
+            <span className="text-xs font-mono font-bold shrink-0 bg-background/80 px-2.5 py-1 rounded-lg border border-destructive/30">
+              {ultimoRechazo.cantidad_afectada} pliegos afectados
+            </span>
+          )}
+        </div>
+      )}
 
-        {sorted.map((etapa) => {
-          const info = estadoInfo[etapa.estado] || estadoInfo.bloqueada;
-          const IconComp = info.icon;
-          const areaColor = etapa.area.color_hex;
-          const isTerminada = etapa.estado === "terminada";
-          const isEnProceso = etapa.estado === "en_proceso";
+      {/* Flujo agrupado en 3 Fases */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {fases.map((fase) => {
+          const configFase = FASES_TITULOS[fase];
+          const etapasDeFase = sorted.filter((e) => e.area.fase === fase);
+          if (etapasDeFase.length === 0) return null;
 
           return (
             <div
-              key={etapa.id}
-              className="flex flex-col items-center text-center relative z-10 px-2"
+              key={fase}
+              className="rounded-2xl border border-border/80 bg-muted/20 p-3.5 space-y-3"
             >
-              {/* Círculo indicador */}
-              <div
-                className={`h-10 w-10 rounded-xl flex items-center justify-center border transition-[transform,background-color,border-color] duration-150 ease-[var(--ease-out)] shadow-xs ${
-                  isTerminada
-                    ? "bg-[var(--success)] border-[var(--success)] text-[var(--success-foreground)]"
-                    : isEnProceso
-                    ? "bg-primary border-primary text-primary-foreground ring-2 ring-primary/25"
-                    : "bg-card border-border/80 text-muted-foreground"
-                }`}
-                style={
-                  isEnProceso || isTerminada
-                    ? undefined
-                    : { borderColor: areaColor, color: areaColor }
-                }
-              >
-                <IconComp className="h-4 w-4" />
-              </div>
-
-              {/* Nombre de la Estación */}
-              <div className="mt-2">
-                <span className="font-semibold text-xs text-foreground block font-mono">
-                  {etapa.area.nombre}
+              <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Fase: {configFase.label}
                 </span>
                 <span
-                  className={`inline-block text-[10px] font-mono px-2 py-0.5 rounded-md font-medium mt-1 ${info.badgeBg}`}
+                  className={cn(
+                    "text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border font-semibold",
+                    configFase.badgeClass
+                  )}
                 >
-                  {info.label}
+                  {etapasDeFase.filter((e) => e.estado === "terminada").length}/
+                  {etapasDeFase.length}
                 </span>
               </div>
 
-              {/* Minutos trabajados si aplica */}
-              {etapa.minutos_trabajados > 0 && (
-                <span className="text-[10px] text-muted-foreground mt-0.5 tabular-nums font-mono">
-                  {etapa.minutos_trabajados} min
-                </span>
-              )}
+              <div className="space-y-2">
+                {etapasDeFase.map((etapa) => {
+                  const info = getEstadoEtapaMetadata(etapa.estado);
+                  const IconComp = ICON_COMPONENTS[info.icono] || Clock;
+                  const isTerminada = etapa.estado === "terminada";
+                  const isEnProceso = etapa.estado === "en_proceso";
+                  const isOmitida = etapa.estado === "omitida";
+                  const isEnEspera = info.esEnEspera;
+                  const esDestinoRechazo =
+                    ultimoRechazo && ultimoRechazo.area_destino_id === etapa.area.id;
+
+                  return (
+                    <div
+                      key={etapa.id}
+                      className={cn(
+                        "p-2.5 rounded-xl border text-xs transition-all flex items-center justify-between",
+                        isEnProceso
+                          ? "bg-primary/10 border-primary ring-1 ring-primary/30"
+                          : isEnEspera
+                          ? "bg-amber-500/10 border-amber-500/40"
+                          : isTerminada
+                          ? "bg-card border-border/70"
+                          : isOmitida
+                          ? "bg-muted/30 border-dashed border-border/60 opacity-60"
+                          : "bg-card/60 border-border/60 text-muted-foreground"
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <div
+                          className={cn(
+                            "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 border",
+                            isTerminada
+                              ? "bg-[var(--success)] border-[var(--success)] text-[var(--success-foreground)]"
+                              : isEnProceso
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : isEnEspera
+                              ? "bg-amber-500 border-amber-500 text-white"
+                              : "bg-muted border-border text-muted-foreground"
+                          )}
+                        >
+                          <IconComp className="h-3.5 w-3.5" />
+                        </div>
+
+                        <div className="truncate">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-foreground truncate">
+                              {etapa.area.nombre}
+                            </span>
+                            {etapa.intento && etapa.intento > 1 && (
+                              <span className="text-[9px] bg-destructive/15 text-destructive font-mono font-bold px-1 rounded">
+                                #{etapa.intento}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-muted-foreground block truncate">
+                            {info.label}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0 pl-2">
+                        {esDestinoRechazo && (
+                          <span className="text-[9px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded">
+                            Reproceso
+                          </span>
+                        )}
+                        {etapa.minutos_trabajados > 0 && (
+                          <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
+                            {etapa.minutos_trabajados}m
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           );
         })}
