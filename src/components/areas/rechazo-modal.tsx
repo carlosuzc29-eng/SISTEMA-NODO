@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { AreaRow, OrdenEtapaRow } from "@/types/database";
 import { OrdenConRelaciones } from "@/features/ordenes/actions";
 import { Button } from "@/components/ui/button";
@@ -40,15 +40,9 @@ export function RechazoModal({
         .filter(Boolean) as AreaRow[])
     : areasDisponibles.filter((a) => a.orden < (areaActualConfig?.orden || 9) && a.activa);
 
-  const [areaDestinoId, setAreaDestinoId] = useState(
-    areasDestino[areasDestino.length - 1]?.id || ""
-  );
-
-  useEffect(() => {
-    if (!areaDestinoId && areasDestino.length > 0) {
-      setAreaDestinoId(areasDestino[areasDestino.length - 1].id);
-    }
-  }, [areasDestino, areaDestinoId]);
+  const defaultDestinoId = areasDestino[areasDestino.length - 1]?.id || "";
+  const [selectedAreaId, setSelectedAreaId] = useState("");
+  const areaDestinoId = selectedAreaId || defaultDestinoId;
 
   const [motivo, setMotivo] = useState("");
   const [cantidadAfectada, setCantidadAfectada] = useState<number | undefined>(undefined);
@@ -70,7 +64,7 @@ export function RechazoModal({
           <div className="flex items-center gap-2.5 text-destructive">
             <AlertTriangle className="h-5 w-5" />
             <div>
-              <h3 className="font-bold text-lg text-foreground">
+              <h3 className="font-bold text-lg text-foreground font-display">
                 Rechazar Trabajo en Control de Calidad
               </h3>
               <p className="text-xs text-muted-foreground font-mono">
@@ -109,8 +103,8 @@ export function RechazoModal({
                   <button
                     key={a.id}
                     type="button"
-                    onClick={() => setAreaDestinoId(a.id)}
-                    className={`w-full p-3 rounded-xl border text-left text-xs font-semibold transition-all flex items-center justify-between ${
+                    onClick={() => setSelectedAreaId(a.id)}
+                    className={`w-full p-3 rounded-xl border text-left text-xs font-semibold transition-[background-color,border-color,color] duration-120 ease-[var(--ease-out)] flex items-center justify-between ${
                       isSelected
                         ? "bg-destructive/15 border-destructive text-destructive font-bold ring-1 ring-destructive/30"
                         : "bg-muted/30 border-border/70 hover:border-destructive/40 text-foreground"
@@ -123,7 +117,7 @@ export function RechazoModal({
                       />
                       <span>{a.nombre}</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground font-mono">
+                    <span className="text-[11px] text-muted-foreground font-mono">
                       Fase {a.fase.replace("_", "-")}
                     </span>
                   </button>

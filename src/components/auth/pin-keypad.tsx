@@ -82,11 +82,11 @@ export function PinKeypad({
               className={cn(
                 "h-3.5 w-3.5 rounded-full border transition-[transform,background-color,border-color] duration-150 ease-[var(--ease-out)]",
                 hasError
-                  ? "border-destructive/80 bg-destructive/40"
+                  ? "border-destructive bg-destructive/40"
                   : isFilled
-                  ? "bg-primary border-primary scale-110 shadow-sm shadow-primary/30"
+                  ? "bg-[var(--ink-magenta)] border-[var(--ink-magenta)] scale-110 shadow-sm shadow-[var(--ink-magenta)]/30"
                   : isCurrent
-                  ? "border-primary/80 bg-primary/15 ring-2 ring-primary/25"
+                  ? "border-[var(--ink-magenta)]/80 bg-[var(--ink-magenta)]/15 ring-2 ring-[var(--ink-magenta)]/25"
                   : "border-border/80 bg-muted/40"
               )}
             />
@@ -94,8 +94,8 @@ export function PinKeypad({
         })}
       </div>
 
-      {/* Teclado numérico táctil */}
-      <div className="grid grid-cols-3 gap-2 w-full">
+      {/* Teclado numérico táctil (mínimo 56px de alto para operarios) */}
+      <div className="grid grid-cols-3 gap-2.5 w-full">
         {digits.map((num) => (
           <Button
             key={num}
@@ -103,7 +103,7 @@ export function PinKeypad({
             variant="outline"
             disabled={disabled}
             onClick={() => handleDigit(num)}
-            className="h-14 sm:h-15 text-2xl font-mono font-medium rounded-xl border-border/70 hover:border-border hover:bg-muted/50 active:scale-[0.96] transition-[transform,background-color,border-color] duration-100 ease-[var(--ease-out)] shadow-xs select-none"
+            className="h-14 sm:h-15 min-h-[56px] text-2xl font-mono font-semibold rounded-2xl border-border hover:border-foreground/30 hover:bg-muted/50 active:scale-[0.97] transition-[transform,background-color,border-color] duration-100 ease-[var(--ease-out)] shadow-xs select-none"
           >
             {num}
           </Button>
@@ -116,7 +116,7 @@ export function PinKeypad({
           disabled={disabled || value.length === 0}
           onClick={handleClear}
           title="Borrar todo"
-          className="h-14 sm:h-15 text-xs font-mono font-medium uppercase tracking-wider rounded-xl text-muted-foreground hover:text-foreground active:scale-[0.96] transition-[transform,background-color] duration-100 ease-[var(--ease-out)]"
+          className="h-14 sm:h-15 min-h-[56px] text-xs font-mono font-medium uppercase tracking-wider rounded-2xl text-muted-foreground hover:text-foreground active:scale-[0.97] transition-[transform,background-color] duration-100 ease-[var(--ease-out)]"
         >
           <X className="h-4 w-4" />
         </Button>
@@ -127,7 +127,7 @@ export function PinKeypad({
           variant="outline"
           disabled={disabled}
           onClick={() => handleDigit("0")}
-          className="h-14 sm:h-15 text-2xl font-mono font-medium rounded-xl border-border/70 hover:border-border hover:bg-muted/50 active:scale-[0.96] transition-[transform,background-color,border-color] duration-100 ease-[var(--ease-out)] shadow-xs select-none"
+          className="h-14 sm:h-15 min-h-[56px] text-2xl font-mono font-semibold rounded-2xl border-border hover:border-foreground/30 hover:bg-muted/50 active:scale-[0.97] transition-[transform,background-color,border-color] duration-100 ease-[var(--ease-out)] shadow-xs select-none"
         >
           0
         </Button>
@@ -139,7 +139,7 @@ export function PinKeypad({
           disabled={disabled || value.length === 0}
           onClick={handleBackspace}
           title="Borrar dígito"
-          className="h-14 sm:h-15 rounded-xl text-muted-foreground hover:text-foreground active:scale-[0.96] transition-[transform,background-color] duration-100 ease-[var(--ease-out)]"
+          className="h-14 sm:h-15 min-h-[56px] rounded-2xl text-muted-foreground hover:text-foreground active:scale-[0.97] transition-[transform,background-color] duration-100 ease-[var(--ease-out)]"
         >
           <Delete className="h-5 w-5" />
         </Button>

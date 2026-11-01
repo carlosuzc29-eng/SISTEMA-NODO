@@ -167,7 +167,7 @@ export function OtSheetDetail({ orden, onClose }: OtSheetDetailProps) {
                 {orden.comentarios.map((c) => (
                   <div key={c.id} className="p-3 rounded-xl bg-muted/30 border border-border/60 text-xs">
                     <p className="text-foreground leading-relaxed">{c.texto}</p>
-                    <span className="text-[10px] text-muted-foreground mt-1 block">
+                    <span className="text-[11px] text-muted-foreground mt-1 block">
                       {new Date(c.created_at).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>

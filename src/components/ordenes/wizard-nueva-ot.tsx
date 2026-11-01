@@ -236,7 +236,7 @@ export function WizardNuevaOt({
               type="button"
               onClick={() => setPaso(s.num as 1 | 2 | 3)}
               className={cn(
-                "p-3 rounded-2xl border text-left transition-all",
+                "p-3 rounded-2xl border text-left transition-[background-color,border-color,box-shadow,color] duration-150 ease-[var(--ease-out)]",
                 isActive
                   ? "bg-primary/10 border-primary ring-1 ring-primary/30"
                   : isDone
@@ -247,7 +247,7 @@ export function WizardNuevaOt({
               <div className="flex items-center gap-2">
                 <span
                   className={cn(
-                    "h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+                    "h-5 w-5 rounded-full flex items-center justify-center text-[11px] font-bold",
                     isActive
                       ? "bg-primary text-primary-foreground"
                       : isDone
@@ -259,7 +259,7 @@ export function WizardNuevaOt({
                 </span>
                 <span className="font-bold text-xs text-foreground">{s.label}</span>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 truncate">{s.desc}</p>
+              <p className="text-[11px] text-muted-foreground mt-1 truncate">{s.desc}</p>
             </button>
           );
         })}
@@ -305,7 +305,7 @@ export function WizardNuevaOt({
                       type="button"
                       onClick={() => setClienteId(c.id)}
                       className={cn(
-                        "p-3.5 rounded-xl border text-left transition-all",
+                        "p-3.5 rounded-xl border text-left transition-[background-color,border-color,box-shadow] duration-150 ease-[var(--ease-out)]",
                         isSelected
                           ? "bg-primary/10 border-primary ring-1 ring-primary/30"
                           : "bg-card border-border/70 hover:border-primary/40"
@@ -323,7 +323,7 @@ export function WizardNuevaOt({
                         </p>
                       )}
                       {c.telefono && (
-                        <p className="text-[10px] font-mono text-muted-foreground/80 mt-1">
+                        <p className="text-[11px] font-mono text-muted-foreground/80 mt-1">
                           {c.telefono}
                         </p>
                       )}
@@ -421,7 +421,7 @@ export function WizardNuevaOt({
                         type="button"
                         onClick={() => handleTipoTrabajoChange(tipo.id)}
                         className={cn(
-                          "p-3 rounded-xl border text-left transition-all",
+                          "p-3 rounded-xl border text-left transition-[background-color,border-color,box-shadow,color] duration-150 ease-[var(--ease-out)]",
                           isSelected
                             ? "bg-primary/10 border-primary font-semibold text-primary ring-1 ring-primary/30"
                             : "bg-card border-border/70 hover:border-primary/40 text-foreground"
@@ -430,7 +430,7 @@ export function WizardNuevaOt({
                         <span className="text-xs block font-bold truncate">
                           {tipo.nombre}
                         </span>
-                        <span className="text-[10px] text-muted-foreground block mt-0.5">
+                        <span className="text-[11px] text-muted-foreground block mt-0.5">
                           {tipo.ruta.length} estaciones sugeridas
                         </span>
                       </button>
@@ -519,17 +519,17 @@ export function WizardNuevaOt({
                           type="button"
                           onClick={() => handleToggleAcabado(acabado.id)}
                           className={cn(
-                            "px-3 py-1.5 rounded-xl border text-xs font-medium transition-all flex items-center gap-1.5",
+                            "px-3 py-1.5 rounded-xl border text-xs font-medium transition-[background-color,border-color,color] duration-120 ease-[var(--ease-out)] flex items-center gap-1.5",
                             isSelected
-                              ? "bg-amber-500/15 border-amber-500 text-amber-600 dark:text-amber-400 font-bold ring-1 ring-amber-500/30"
-                              : "bg-muted/30 border-border/70 hover:border-amber-500/40 text-foreground"
+                              ? "bg-[var(--ink-yellow-subtle)] border-[var(--ink-yellow)] text-[var(--ink-yellow-foreground)] font-bold ring-1 ring-[var(--ink-yellow)]/30"
+                              : "bg-muted/30 border-border/70 hover:border-[var(--ink-yellow)]/40 text-foreground"
                           )}
                         >
                           <div
                             className={cn(
-                              "h-3.5 w-3.5 rounded flex items-center justify-center text-[9px]",
+                              "h-3.5 w-3.5 rounded flex items-center justify-center text-[11px]",
                               isSelected
-                                ? "bg-amber-500 text-white"
+                                ? "bg-[var(--ink-yellow)] text-[var(--ink-yellow-foreground)]"
                                 : "border border-muted-foreground/40"
                             )}
                           >
@@ -621,12 +621,12 @@ export function WizardNuevaOt({
                           type="button"
                           onClick={() => setPrioridad(p)}
                           className={cn(
-                            "py-2 text-xs rounded-xl font-bold uppercase transition-all",
+                            "py-2 text-xs rounded-xl font-bold uppercase transition-[background-color,color,box-shadow,transform] duration-120 ease-[var(--ease-out)] active:scale-[0.98]",
                             isSelected
                               ? p === "urgente"
                                 ? "bg-destructive text-destructive-foreground shadow-xs"
                                 : p === "alta"
-                                ? "bg-amber-500 text-white shadow-xs"
+                                ? "bg-[var(--ink-yellow)] text-[var(--ink-yellow-foreground)] shadow-xs"
                                 : "bg-primary text-primary-foreground shadow-xs"
                               : "bg-muted/40 text-muted-foreground hover:bg-muted"
                           )}
@@ -643,10 +643,10 @@ export function WizardNuevaOt({
               <div className="rounded-2xl border border-border/80 bg-muted/20 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
-                    <FileCheck2 className="h-4 w-4 text-emerald-500" />
+                    <FileCheck2 className="h-4 w-4 text-[var(--color-registry-green)]" />
                     Resumen de la Orden
                   </span>
-                  <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 text-[10px] gap-1 font-semibold">
+                  <Badge variant="outline" className="bg-[var(--ink-yellow-subtle)] text-[var(--ink-yellow-foreground)] border-[var(--ink-yellow)]/30 text-[11px] gap-1 font-semibold">
                     <DoorOpen className="h-3 w-3" />
                     Estado inicial: En Puerta
                   </Badge>

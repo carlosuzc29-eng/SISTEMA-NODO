@@ -87,7 +87,7 @@ export function DeliveryModal({ orden, onClose, onSuccess }: DeliveryModalProps)
               <button
                 type="button"
                 onClick={() => setTipoRetiro("cliente")}
-                className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-[background-color,border-color,color,transform] duration-120 ease-[var(--ease-out)] active:scale-[0.98] ${
                   tipoRetiro === "cliente"
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-muted/30 border-border/70 text-foreground hover:bg-muted"
@@ -99,7 +99,7 @@ export function DeliveryModal({ orden, onClose, onSuccess }: DeliveryModalProps)
               <button
                 type="button"
                 onClick={() => setTipoRetiro("transportista")}
-                className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                className={`py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-[background-color,border-color,color,transform] duration-120 ease-[var(--ease-out)] active:scale-[0.98] ${
                   tipoRetiro === "transportista"
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-muted/30 border-border/70 text-foreground hover:bg-muted"

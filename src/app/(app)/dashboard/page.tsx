@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import {
   Activity,
-  CheckCircle2,
   AlertTriangle,
   Clock,
   Truck,
@@ -102,26 +101,27 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </div>
       </div>
 
-      {/* 5 Métricas Principales (Stat Cards) */}
+      {/* 5 Métricas Principales (Stat Cards) con Tintas de Proceso */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        {/* KPI 1: Activas en Planta */}
+        {/* KPI 1: Activas en Planta — Magenta de Prensa */}
         <Card
           variant="stat"
           className={cn(
-            "rounded-2xl border-border/80 shadow-xs",
-            isTvMode && "p-4"
+            "rounded-2xl border-border/80 shadow-xs relative overflow-hidden",
+            isTvMode && "p-4 crop-marks"
           )}
         >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--ink-magenta)]" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
-            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
               Activas en Planta
             </span>
-            <Activity className="h-4 w-4 text-primary" />
+            <Activity className="h-4 w-4 text-[var(--ink-magenta)]" />
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div
               className={cn(
-                "font-mono font-bold tabular-nums text-foreground tracking-tight",
+                "font-display font-mono font-bold tabular-nums text-foreground tracking-tight",
                 isTvMode ? "text-5xl" : "text-3xl"
               )}
             >
@@ -129,7 +129,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
               <span className="text-[11px] text-muted-foreground">En producción</span>
-              <span className="text-[11px] font-mono font-medium text-primary flex items-center gap-0.5">
+              <span className="text-[11px] font-mono font-medium text-[var(--ink-magenta)] flex items-center gap-0.5">
                 <TrendingUp className="h-3 w-3" />
                 en máquinas
               </span>
@@ -137,25 +137,26 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </CardContent>
         </Card>
 
-        {/* KPI 2: En Puerta (Pendientes) */}
+        {/* KPI 2: En Puerta (Pendientes) — Crema Cálido / Ámbar */}
         <Card
           variant="stat"
           className={cn(
-            "rounded-2xl border-border/80 shadow-xs",
-            data.kpis.enPuerta > 0 ? "border-amber-500/40 bg-amber-500/5" : "",
-            isTvMode && "p-4"
+            "rounded-2xl border-border/80 shadow-xs relative overflow-hidden",
+            data.kpis.enPuerta > 0 ? "border-[var(--ink-yellow)]/40 bg-[var(--ink-yellow-subtle)]/40" : "",
+            isTvMode && "p-4 crop-marks"
           )}
         >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--ink-yellow)]" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
-            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
               En Puerta
             </span>
-            <DoorOpen className="h-4 w-4 text-amber-500" />
+            <DoorOpen className="h-4 w-4 text-[var(--ink-yellow-foreground)]" />
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div
               className={cn(
-                "font-mono font-bold tabular-nums text-amber-600 dark:text-amber-400 tracking-tight",
+                "font-display font-mono font-bold tabular-nums text-foreground tracking-tight",
                 isTvMode ? "text-5xl" : "text-3xl"
               )}
             >
@@ -163,31 +164,32 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
               <span className="text-[11px] text-muted-foreground">Por liberar</span>
-              <span className="text-[11px] font-mono font-medium text-amber-600 dark:text-amber-400">
+              <span className="text-[11px] font-mono font-medium text-[var(--ink-yellow-foreground)]">
                 recepción
               </span>
             </div>
           </CardContent>
         </Card>
 
-        {/* KPI 3: Listas para Despacho */}
+        {/* KPI 3: Listas para Despacho — Verde de Registro */}
         <Card
           variant="stat"
           className={cn(
-            "rounded-2xl border-border/80 shadow-xs",
-            isTvMode && "p-4"
+            "rounded-2xl border-border/80 shadow-xs relative overflow-hidden",
+            isTvMode && "p-4 crop-marks"
           )}
         >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-registry-green)]" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
-            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
               Listas Despacho
             </span>
-            <Truck className="h-4 w-4 text-emerald-500" />
+            <Truck className="h-4 w-4 text-[var(--color-registry-green)]" />
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div
               className={cn(
-                "font-mono font-bold tabular-nums text-emerald-600 dark:text-emerald-400 tracking-tight",
+                "font-display font-mono font-bold tabular-nums text-[var(--color-registry-green-foreground)] dark:text-[var(--color-registry-green)] tracking-tight",
                 isTvMode ? "text-5xl" : "text-3xl"
               )}
             >
@@ -195,7 +197,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
               <span className="text-[11px] text-muted-foreground">Embaladas</span>
-              <span className="text-[11px] font-mono font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+              <span className="text-[11px] font-mono font-medium text-[var(--color-registry-green-foreground)] dark:text-[var(--color-registry-green)] flex items-center gap-0.5">
                 <ArrowUpRight className="h-3 w-3" />
                 por entregar
               </span>
@@ -203,21 +205,22 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </CardContent>
         </Card>
 
-        {/* KPI 4: Atrasadas */}
+        {/* KPI 4: Atrasadas — Rojo Tinta */}
         <Card
           variant="stat"
           className={cn(
-            "rounded-2xl shadow-xs",
+            "rounded-2xl shadow-xs relative overflow-hidden",
             data.kpis.atrasadas > 0
               ? "border-destructive/60 bg-destructive/10 ring-1 ring-destructive/20"
               : "border-border/80",
-            isTvMode && "p-4"
+            isTvMode && "p-4 crop-marks"
           )}
         >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-destructive" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
             <span
               className={cn(
-                "text-[10px] font-mono font-semibold uppercase tracking-wider",
+                "text-[11px] font-mono font-semibold uppercase tracking-wider",
                 data.kpis.atrasadas > 0 ? "text-destructive font-bold" : "text-muted-foreground"
               )}
             >
@@ -233,7 +236,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           <CardContent className="px-4 pb-4">
             <div
               className={cn(
-                "font-mono font-bold tabular-nums tracking-tight",
+                "font-display font-mono font-bold tabular-nums tracking-tight",
                 data.kpis.atrasadas > 0 ? "text-destructive" : "text-foreground",
                 isTvMode ? "text-5xl" : "text-3xl"
               )}
@@ -254,24 +257,25 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </CardContent>
         </Card>
 
-        {/* KPI 5: Entregadas en la semana */}
+        {/* KPI 5: Entregadas en la semana — Cian de Proceso */}
         <Card
           variant="stat"
           className={cn(
-            "rounded-2xl border-border/80 shadow-xs",
-            isTvMode && "p-4"
+            "rounded-2xl border-border/80 shadow-xs relative overflow-hidden",
+            isTvMode && "p-4 crop-marks"
           )}
         >
+          <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--ink-cyan)]" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 px-4 pt-4">
-            <span className="text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
               Entregadas Semana
             </span>
-            <CalendarCheck className="h-4 w-4 text-emerald-500" />
+            <CalendarCheck className="h-4 w-4 text-[var(--ink-cyan-foreground)] dark:text-[var(--ink-cyan)]" />
           </CardHeader>
           <CardContent className="px-4 pb-4">
             <div
               className={cn(
-                "font-mono font-bold tabular-nums text-foreground tracking-tight",
+                "font-display font-mono font-bold tabular-nums text-foreground tracking-tight",
                 isTvMode ? "text-5xl" : "text-3xl"
               )}
             >
@@ -279,7 +283,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             </div>
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
               <span className="text-[11px] text-muted-foreground">Despachadas</span>
-              <span className="text-[11px] font-mono font-medium text-emerald-600 dark:text-emerald-400">
+              <span className="text-[11px] font-mono font-medium text-[var(--ink-cyan-foreground)] dark:text-[var(--ink-cyan)]">
                 últimos 7d
               </span>
             </div>
@@ -336,7 +340,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 <Link
                   key={orden.id}
                   href={`/ordenes/${orden.codigo}`}
-                  className="p-3 rounded-xl border border-border/70 hover:border-primary/50 bg-card/60 transition-all flex items-center justify-between group"
+                  className="p-3 rounded-xl border border-border/70 hover:border-primary/50 bg-card/60 transition-[background-color,border-color] duration-120 ease-[var(--ease-out)] flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-3 truncate">
                     <span className="font-mono font-bold text-xs group-hover:text-primary transition-colors">

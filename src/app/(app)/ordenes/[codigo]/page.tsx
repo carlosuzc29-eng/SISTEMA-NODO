@@ -198,13 +198,13 @@ export default async function OrdenDetallePage({ params }: OrdenDetallePageProps
             {/* Acabados Especiales */}
             {(orden.acabados || (orden.acabados_rel && orden.acabados_rel.length > 0)) && (
               <div className="p-3.5 rounded-xl border border-border/60 bg-card text-xs space-y-1.5">
-                <span className="font-semibold text-muted-foreground uppercase text-[10px] tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                <span className="font-semibold text-muted-foreground uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-[var(--ink-yellow)]" />
                   Acabados Requeridos:
                 </span>
                 <div className="flex flex-wrap gap-1.5 pt-0.5">
                   {orden.acabados_rel?.map((a) => (
-                    <Badge key={a.id} variant="outline" className="text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30">
+                    <Badge key={a.id} variant="outline" className="text-xs bg-[var(--ink-yellow-subtle)] text-[var(--ink-yellow-foreground)] border-[var(--ink-yellow)]/30">
                       {a.nombre}
                     </Badge>
                   ))}
@@ -219,7 +219,7 @@ export default async function OrdenDetallePage({ params }: OrdenDetallePageProps
 
             {orden.descripcion && (
               <div className="p-3.5 rounded-xl border border-border/60 bg-card text-xs space-y-1">
-                <span className="font-semibold text-muted-foreground uppercase text-[10px] tracking-wider block">
+                <span className="font-semibold text-muted-foreground uppercase text-[11px] tracking-wider block">
                   Descripción / Instrucciones Especiales:
                 </span>
                 <p className="text-foreground leading-relaxed">{orden.descripcion}</p>
@@ -250,7 +250,7 @@ export default async function OrdenDetallePage({ params }: OrdenDetallePageProps
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Prioridad:</span>
-                <Badge variant="outline" className="uppercase font-bold text-[10px]">
+                <Badge variant="outline" className="uppercase font-bold text-[11px]">
                   {orden.prioridad}
                 </Badge>
               </div>
@@ -305,7 +305,7 @@ export default async function OrdenDetallePage({ params }: OrdenDetallePageProps
                 {orden.comentarios.map((c) => (
                   <div key={c.id} className="p-3.5 rounded-xl border border-border/60 bg-muted/20 text-xs space-y-1">
                     <p className="text-foreground leading-relaxed">{c.texto}</p>
-                    <span className="text-[10px] text-muted-foreground font-mono block">
+                    <span className="text-[11px] text-muted-foreground font-mono block">
                       {new Date(c.created_at).toLocaleString("es-ES")}
                     </span>
                   </div>

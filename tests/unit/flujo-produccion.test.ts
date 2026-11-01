@@ -33,9 +33,9 @@ test.describe("Flujo de Producción - Reglas de Negocio y Estados (11 Áreas)", 
     let arrojoError = false;
     try {
       mockStore.liberarOrden(ordenId, mockStore.perfiles[0].id);
-    } catch (err: any) {
+    } catch (err) {
       arrojoError = true;
-      expect(err.message).toBe("La orden ya está en proceso o no está en puerta");
+      expect((err as Error).message).toBe("La orden ya está en proceso o no está en puerta");
     }
     expect(arrojoError).toBeTruthy();
   });
@@ -162,9 +162,9 @@ test.describe("Flujo de Producción - Reglas de Negocio y Estados (11 Áreas)", 
     let falloSinForzar = false;
     try {
       mockStore.completarSecado(etapaImpresion.id, false, mockStore.perfiles[0].id);
-    } catch (err: any) {
+    } catch (err) {
       falloSinForzar = true;
-      expect(err.message).toContain("El tiempo de secado programado aún no concluye");
+      expect((err as Error).message).toContain("El tiempo de secado programado aún no concluye");
     }
     expect(falloSinForzar).toBeTruthy();
 
@@ -242,7 +242,7 @@ test.describe("Flujo de Producción - Reglas de Negocio y Estados (11 Áreas)", 
       (ev) => ev.orden_id === ordenId && ev.tipo === "rechazo_calidad"
     )!;
     expect(eventoRechazo).toBeTruthy();
-    const detalle = eventoRechazo.detalle as Record<string, any>;
+    const detalle = eventoRechazo.detalle as Record<string, unknown>;
     expect(detalle.motivo).toBe("Falla de registro");
     expect(detalle.intento).toBe(2);
   });

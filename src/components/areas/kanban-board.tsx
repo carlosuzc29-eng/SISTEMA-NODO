@@ -267,38 +267,42 @@ export function KanbanBoard({
       titulo: "En Cola",
       icono: Clock,
       color: "text-muted-foreground",
-      badgeColor: "bg-muted text-muted-foreground",
+      badgeColor: "bg-muted text-muted-foreground border border-border/80",
+      topStrip: "bg-muted-foreground/40",
       items: colCola,
     },
     {
       id: "proceso",
       titulo: "En Proceso",
       icono: Play,
-      color: "text-primary",
-      badgeColor: "bg-primary/10 text-primary border border-primary/20",
+      color: "text-[var(--ink-magenta)]",
+      badgeColor: "bg-[var(--ink-magenta-subtle)] text-[var(--ink-magenta-foreground)] border border-[var(--ink-magenta)]/30 font-semibold",
+      topStrip: "bg-[var(--ink-magenta)]",
       items: colProceso,
     },
     {
       id: "espera",
       titulo: "En Espera",
       icono: Pause,
-      color: "text-amber-500",
-      badgeColor: "bg-amber-500/10 text-amber-600 border border-amber-500/20",
+      color: "text-[var(--ink-yellow-foreground)]",
+      badgeColor: "bg-[var(--ink-yellow-subtle)] text-[var(--ink-yellow-foreground)] border border-[var(--ink-yellow)]/30",
+      topStrip: "bg-[var(--ink-yellow)]",
       items: colEspera,
     },
     {
       id: "terminadas",
       titulo: "Terminadas Hoy",
       icono: CheckCircle,
-      color: "text-emerald-500",
-      badgeColor: "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20",
+      color: "text-[var(--color-registry-green)]",
+      badgeColor: "bg-[var(--color-registry-green-subtle)] text-[var(--color-registry-green-foreground)] border border-[var(--color-registry-green)]/30 font-semibold",
+      topStrip: "bg-[var(--color-registry-green)]",
       items: colTerminadas,
     },
   ];
 
   return (
     <>
-      {/* Tablero Kanban de 4 Columnas */}
+      {/* Tablero Kanban de 4 Columnas («Prensa CMYK») */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5 items-start">
         {columnas.map((col) => {
           const Icon = col.icono;
@@ -306,13 +310,16 @@ export function KanbanBoard({
           return (
             <div
               key={col.id}
-              className="rounded-xl border border-border/80 bg-card/50 backdrop-blur-sm p-3 flex flex-col gap-2.5 min-h-[540px]"
+              className="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm p-3 flex flex-col gap-2.5 min-h-[540px] relative overflow-hidden"
             >
+              {/* Franja superior indicadora del estado de columna */}
+              <div className={`absolute top-0 left-0 right-0 h-1 ${col.topStrip}`} />
+
               {/* Encabezado fijo de Columna */}
-              <div className="sticky top-0 z-10 flex items-center justify-between pb-2 pt-0.5 bg-card/90 backdrop-blur-md border-b border-border/60">
+              <div className="sticky top-0 z-10 flex items-center justify-between pb-2 pt-1.5 bg-card/90 backdrop-blur-md border-b border-border/60">
                 <div className="flex items-center gap-1.5">
                   <Icon className={`h-3.5 w-3.5 ${col.color}`} />
-                  <span className="font-semibold text-xs text-foreground uppercase tracking-wider font-mono">
+                  <span className="font-semibold text-xs text-foreground uppercase tracking-wider font-display">
                     {col.titulo}
                   </span>
                 </div>
@@ -323,32 +330,36 @@ export function KanbanBoard({
                 </span>
               </div>
 
-              {/* Lista de Tarjetas o Estado Vacío */}
+              {/* Lista de Tarjetas con Transiciones Suaves */}
               <div className="flex flex-col gap-2 flex-1">
                 {col.items.length > 0 ? (
                   col.items.map(({ orden, etapa }) => (
-                    <OtCard
+                    <div
                       key={etapa.id}
-                      orden={orden}
-                      etapaActual={etapa}
-                      areaConfig={area}
-                      proveedores={proveedores}
-                      onIniciar={handleIniciar}
-                      onPausar={handlePausar}
-                      onReanudar={handleReanudar}
-                      onTerminar={handleTerminar}
-                      onIniciarSecado={handleIniciarSecado}
-                      onEnviarProveedor={handleEnviarProveedor}
-                      onRecibirProveedor={handleRecibirProveedor}
-                      onAprobarCalidad={handleAprobarCalidad}
-                      onRechazarCalidad={handleRechazarCalidad}
-                      onOmitir={handleOmitir}
-                      onSelect={(o) => setSheetOrden(o)}
-                      isActionPending={isPending}
-                    />
+                      className="transition-[opacity,transform] duration-200 ease-[var(--ease-out)] animate-in fade-in-50 slide-in-from-bottom-1"
+                    >
+                      <OtCard
+                        orden={orden}
+                        etapaActual={etapa}
+                        areaConfig={area}
+                        proveedores={proveedores}
+                        onIniciar={handleIniciar}
+                        onPausar={handlePausar}
+                        onReanudar={handleReanudar}
+                        onTerminar={handleTerminar}
+                        onIniciarSecado={handleIniciarSecado}
+                        onEnviarProveedor={handleEnviarProveedor}
+                        onRecibirProveedor={handleRecibirProveedor}
+                        onAprobarCalidad={handleAprobarCalidad}
+                        onRechazarCalidad={handleRechazarCalidad}
+                        onOmitir={handleOmitir}
+                        onSelect={(o) => setSheetOrden(o)}
+                        isActionPending={isPending}
+                      />
+                    </div>
                   ))
                 ) : (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center p-5 rounded-lg border border-dashed border-border/60 bg-muted/20">
+                  <div className="flex-1 flex flex-col items-center justify-center text-center p-5 rounded-lg border border-dashed border-border/60 bg-muted/15 halftone-pattern">
                     <PackageOpen className="h-7 w-7 text-muted-foreground/40 mb-2 stroke-[1.5]" />
                     <p className="text-xs font-medium text-foreground">
                       Sin órdenes {col.titulo.toLowerCase()}

@@ -76,23 +76,26 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md border-border/80 shadow-lg backdrop-blur-xl bg-card/85 card-highlight">
-      <CardHeader className="text-center pb-3 pt-7">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 shadow-xs">
+    <Card className="w-full max-w-md border-border shadow-lg backdrop-blur-xl bg-card/90 card-highlight relative overflow-hidden crop-marks">
+      {/* Tira CMYK de prensa en el borde superior de la tarjeta */}
+      <div className="cmyk-strip" />
+
+      <CardHeader className="text-center pb-2 pt-6">
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-card border border-border shadow-xs text-primary">
           <Image
             src="/brand/logo.svg"
             alt="NODO 26 Logo"
-            width={28}
-            height={28}
-            className="w-7 h-7"
+            width={34}
+            height={34}
+            className="w-8 h-8 drop-shadow-xs"
             priority
           />
         </div>
-        <CardTitle className="text-xl font-bold tracking-tight text-foreground">
+        <CardTitle className="text-2xl font-bold tracking-tight text-foreground font-display">
           {brand.nombre}
         </CardTitle>
-        <CardDescription className="text-xs text-muted-foreground mt-0.5">
-          Control de Producción • Ingresa usuario y PIN de 6 dígitos
+        <CardDescription className="text-xs text-muted-foreground mt-1">
+          Control de Producción y Empaques • Ingresa usuario y PIN
         </CardDescription>
       </CardHeader>
 

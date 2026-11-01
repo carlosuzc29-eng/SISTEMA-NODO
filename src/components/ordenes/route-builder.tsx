@@ -2,9 +2,8 @@
 
 import React from "react";
 import { AreaRow, FaseArea } from "@/types/database";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Plus, X, ArrowRight, Layers, ArrowLeft, Check, AlertCircle } from "lucide-react";
+import { X, ArrowRight, Layers, ArrowLeft, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface RouteBuilderProps {
@@ -22,17 +21,17 @@ const FASES_CONFIG: Record<
   pre_prensa: {
     label: "Fase 1: Pre-prensa",
     desc: "Diseño, CTP/Planchas y Materiales",
-    badgeClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    badgeClass: "bg-[var(--ink-cyan-subtle)] text-[var(--ink-cyan-foreground)] border-[var(--ink-cyan)]/30",
   },
   prensa: {
     label: "Fase 2: Prensa",
     desc: "Impresión y Acabados exteriores",
-    badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    badgeClass: "bg-[var(--ink-magenta-subtle)] text-[var(--ink-magenta-foreground)] border-[var(--ink-magenta)]/30",
   },
   post_prensa: {
     label: "Fase 3: Post-prensa",
     desc: "Troquelado, Corte, Calidad, Embalaje y Despacho",
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    badgeClass: "bg-[var(--color-registry-green)]/10 text-[var(--color-registry-green)] border-[var(--color-registry-green)]/30",
   },
 };
 
@@ -126,10 +125,10 @@ export function RouteBuilder({
             return (
               <React.Fragment key={`${areaId}-${idx}`}>
                 <div
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-white font-medium text-xs shadow-xs transition-all"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-white font-medium text-xs shadow-xs transition-[transform,opacity,box-shadow] duration-150 ease-[var(--ease-out)]"
                   style={{ backgroundColor: area.color_hex }}
                 >
-                  <span className="bg-black/20 text-white rounded-full h-4 w-4 flex items-center justify-center text-[10px] font-bold">
+                  <span className="bg-black/20 text-white rounded-full h-4 w-4 flex items-center justify-center text-[11px] font-bold">
                     {idx + 1}
                   </span>
                   <span>{area.nombre}</span>
@@ -209,7 +208,7 @@ export function RouteBuilder({
                   </div>
                   <span
                     className={cn(
-                      "text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border font-semibold",
+                      "text-[11px] font-mono uppercase px-2 py-0.5 rounded-md border font-semibold",
                       config.badgeClass
                     )}
                   >
@@ -228,7 +227,7 @@ export function RouteBuilder({
                         type="button"
                         onClick={() => handleToggleArea(area.id)}
                         className={cn(
-                          "w-full p-2.5 rounded-xl border text-left text-xs font-medium transition-all flex items-center justify-between",
+                          "w-full p-2.5 rounded-xl border text-left text-xs font-medium transition-[background-color,border-color,box-shadow,color] duration-150 ease-[var(--ease-out)] flex items-center justify-between",
                           isSelected
                             ? "bg-card border-border shadow-xs text-foreground"
                             : "bg-muted/30 border-dashed border-border/60 text-muted-foreground hover:bg-muted/50"
@@ -246,13 +245,13 @@ export function RouteBuilder({
 
                         <div className="flex items-center gap-1.5 shrink-0">
                           {esOpcional && (
-                            <span className="text-[9px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
+                            <span className="text-[11px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded">
                               Opcional
                             </span>
                           )}
                           <div
                             className={cn(
-                              "h-4 w-4 rounded-md border flex items-center justify-center text-[10px]",
+                              "h-4 w-4 rounded-md border flex items-center justify-center text-[11px]",
                               isSelected
                                 ? "bg-primary text-primary-foreground border-primary"
                                 : "border-border/80 bg-background"

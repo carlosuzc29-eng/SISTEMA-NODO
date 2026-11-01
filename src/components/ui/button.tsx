@@ -9,15 +9,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gradient-to-b from-primary to-[oklch(0.50_0.22_260)] text-primary-foreground shadow-xs [box-shadow:inset_0_1px_0_0_rgb(255_255_255/0.18)] [@media(hover:hover)]:hover:brightness-105 active:brightness-95",
+          "bg-gradient-to-b from-primary to-[oklch(0.50_0.25_352)] text-primary-foreground shadow-xs [box-shadow:inset_0_1px_0_0_rgb(255_255_255/0.22)] [@media(hover:hover)]:hover:brightness-105 active:brightness-95",
+        ink:
+          "bg-[var(--ink-key)] text-[var(--color-card)] shadow-xs [box-shadow:inset_0_1px_0_0_rgb(255_255_255/0.15)] [@media(hover:hover)]:hover:bg-foreground active:brightness-95",
         destructive:
-          "bg-gradient-to-b from-destructive to-[oklch(0.52_0.22_25)] text-destructive-foreground shadow-xs [box-shadow:inset_0_1px_0_0_rgb(255_255_255/0.18)] [@media(hover:hover)]:hover:brightness-105 active:brightness-95",
+          "bg-gradient-to-b from-destructive to-[oklch(0.48_0.22_25)] text-destructive-foreground shadow-xs [box-shadow:inset_0_1px_0_0_rgb(255_255_255/0.20)] [@media(hover:hover)]:hover:brightness-105 active:brightness-95",
         outline:
-          "border border-border/80 bg-card text-foreground shadow-xs [@media(hover:hover)]:hover:bg-accent [@media(hover:hover)]:hover:border-foreground/20 active:bg-accent/80",
+          "border border-border bg-card text-foreground shadow-xs [@media(hover:hover)]:hover:bg-accent [@media(hover:hover)]:hover:border-foreground/30 active:bg-accent/80",
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs [@media(hover:hover)]:hover:bg-secondary/80 active:bg-secondary/90",
         ghost:
-          "text-foreground/80 [@media(hover:hover)]:hover:bg-accent [@media(hover:hover)]:hover:text-foreground active:bg-accent/80",
+          "text-foreground/85 [@media(hover:hover)]:hover:bg-accent [@media(hover:hover)]:hover:text-foreground active:bg-accent/80",
         link: "text-primary underline-offset-4 [@media(hover:hover)]:hover:underline",
       },
       size: {
@@ -25,7 +27,7 @@ const buttonVariants = cva(
         sm: "h-8 rounded-md px-2.5 text-xs",
         lg: "h-11 rounded-xl px-6 text-sm font-semibold",
         icon: "h-9 w-9",
-        keypad: "h-14 w-full text-lg font-semibold rounded-xl",
+        keypad: "h-14 w-full text-lg font-semibold rounded-2xl", /* Mínimo 56px de alto para operarios */
       },
     },
     defaultVariants: {

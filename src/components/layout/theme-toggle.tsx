@@ -14,10 +14,10 @@ export function ThemeToggle() {
       size="icon"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       title="Cambiar tema claro / oscuro"
-      className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground"
+      className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground relative overflow-hidden"
     >
-      <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <Sun className="h-[1.15rem] w-[1.15rem] scale-100 opacity-100 blur-0 dark:scale-90 dark:opacity-0 dark:blur-[2px] transition-[transform,opacity,filter] duration-150 ease-[var(--ease-out)]" />
+      <Moon className="absolute h-[1.15rem] w-[1.15rem] scale-90 opacity-0 blur-[2px] dark:scale-100 dark:opacity-100 dark:blur-0 transition-[transform,opacity,filter] duration-150 ease-[var(--ease-out)]" />
       <span className="sr-only">Cambiar tema</span>
     </Button>
   );

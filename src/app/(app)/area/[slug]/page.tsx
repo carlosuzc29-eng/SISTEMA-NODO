@@ -93,7 +93,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
                   key={a.id}
                   href={`/area/${a.slug}`}
                   className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold shrink-0 transition-all border",
+                    "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold shrink-0 transition-[background-color,border-color,color] duration-150 ease-[var(--ease-out)] border",
                     isActive
                       ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "bg-background/80 hover:bg-muted text-foreground border-border/70 hover:border-border"
@@ -110,7 +110,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
                   {activasEnEstaArea > 0 && (
                     <span
                       className={cn(
-                        "text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md tabular-nums",
+                        "text-[11px] font-mono font-bold px-1.5 py-0.2 rounded-md tabular-nums",
                         isActive
                           ? "bg-black/20 text-white"
                           : "bg-muted text-muted-foreground"
@@ -140,7 +140,7 @@ export default async function AreaPage({ params }: AreaPageProps) {
                   Tablero de Producción
                 </span>
                 <span className="text-xs text-muted-foreground">• Estación 0{area.orden}</span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono tracking-wider">
+                <Badge variant="outline" className="text-[11px] uppercase font-mono tracking-wider">
                   Fase {area.fase.replace("_", " ")}
                 </Badge>
               </div>

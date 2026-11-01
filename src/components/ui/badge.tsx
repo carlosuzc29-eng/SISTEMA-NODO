@@ -8,19 +8,27 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary/10 text-primary border border-primary/20",
-        secondary:
-          "bg-secondary text-secondary-foreground border border-border/60",
-        destructive:
-          "bg-[var(--destructive-subtle)] text-[var(--color-destructive)] border border-[var(--color-destructive)]/20",
-        outline:
-          "text-foreground border border-border/80 bg-background/50",
+          "bg-[var(--ink-magenta-subtle)] text-[var(--ink-magenta-foreground)] border border-[var(--ink-magenta)]/25 font-semibold",
+        cyan:
+          "bg-[var(--ink-cyan-subtle)] text-[var(--ink-cyan-foreground)] border border-[var(--ink-cyan)]/25",
+        yellow:
+          "bg-[var(--ink-yellow-subtle)] text-[var(--ink-yellow-foreground)] border border-[var(--ink-yellow)]/30",
+        key:
+          "bg-[var(--ink-key-subtle)] text-[var(--ink-key-foreground)] border border-border/80",
         success:
-          "bg-[var(--success-subtle)] text-[var(--color-success)] border border-[var(--color-success)]/20",
+          "bg-[var(--color-registry-green-subtle)] text-[var(--color-registry-green-foreground)] border border-[var(--color-registry-green)]/25",
         warning:
-          "bg-[var(--warning-subtle)] text-[var(--color-warning)] border border-[var(--color-warning)]/20",
+          "bg-[var(--ink-yellow-subtle)] text-[var(--ink-yellow-foreground)] border border-[var(--ink-yellow)]/30",
+        orange:
+          "bg-[var(--color-pantone-orange-subtle)] text-[var(--color-pantone-orange-foreground)] border border-[var(--color-pantone-orange)]/25",
         info:
-          "bg-[var(--info-subtle)] text-[var(--color-info)] border border-[var(--color-info)]/20",
+          "bg-[var(--ink-cyan-subtle)] text-[var(--ink-cyan-foreground)] border border-[var(--ink-cyan)]/25",
+        destructive:
+          "bg-[var(--destructive-subtle)] text-[var(--color-destructive)] border border-[var(--color-destructive)]/25",
+        secondary:
+          "bg-secondary text-secondary-foreground border border-border/70",
+        outline:
+          "text-foreground border border-border bg-card/80",
       },
     },
     defaultVariants: {
@@ -37,16 +45,20 @@ export interface BadgeProps
 
 function Badge({ className, variant, dot = false, children, ...props }: BadgeProps) {
   const dotColorMap: Record<string, string> = {
-    default: "bg-primary",
-    secondary: "bg-secondary-foreground",
+    default: "bg-[var(--ink-magenta)]",
+    cyan: "bg-[var(--ink-cyan)]",
+    yellow: "bg-[var(--ink-yellow)]",
+    key: "bg-[var(--ink-key)]",
+    success: "bg-[var(--color-registry-green)]",
+    warning: "bg-[var(--ink-yellow)]",
+    orange: "bg-[var(--color-pantone-orange)]",
+    info: "bg-[var(--ink-cyan)]",
     destructive: "bg-[var(--color-destructive)]",
+    secondary: "bg-secondary-foreground",
     outline: "bg-foreground/50",
-    success: "bg-[var(--color-success)]",
-    warning: "bg-[var(--color-warning)]",
-    info: "bg-[var(--color-info)]",
   };
 
-  const dotClass = dotColorMap[variant || "default"] || "bg-primary";
+  const dotClass = dotColorMap[variant || "default"] || "bg-[var(--ink-magenta)]";
 
   return (
     <div className={cn(badgeVariants({ variant }), className)} {...props}>

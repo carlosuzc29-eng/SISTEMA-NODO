@@ -64,7 +64,7 @@ export function PausaModal({
                     key={m.id}
                     type="button"
                     onClick={() => setMotivoId(m.id)}
-                    className={`w-full p-3.5 rounded-xl border text-left text-xs font-semibold transition-all ${
+                    className={`w-full p-3.5 rounded-xl border text-left text-xs font-semibold transition-[background-color,border-color,color] duration-120 ease-[var(--ease-out)] ${
                       isSelected
                         ? "bg-amber-500/15 border-amber-500 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/30"
                         : "bg-muted/30 border-border/70 hover:border-amber-500/40 text-foreground"

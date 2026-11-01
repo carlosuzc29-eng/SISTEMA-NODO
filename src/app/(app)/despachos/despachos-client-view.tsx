@@ -64,14 +64,14 @@ export function DespachosClientView({
                   key={orden.id}
                   data-testid="despacho-card"
                   data-codigo={orden.codigo}
-                  className="rounded-2xl border border-border/80 bg-card p-4 space-y-3 shadow-xs hover:border-emerald-500/40 transition-all flex flex-col justify-between"
+                  className="rounded-2xl border border-border/80 bg-card p-4 space-y-3 shadow-xs hover:border-[var(--color-registry-green)]/40 transition-[border-color,box-shadow] duration-150 ease-[var(--ease-out)] flex flex-col justify-between"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-mono font-bold text-sm text-foreground">
                         {orden.codigo}
                       </span>
-                      <Badge variant="outline" className="text-[10px] font-mono font-semibold uppercase">
+                      <Badge variant="outline" className="text-[11px] font-mono font-semibold uppercase">
                         {orden.prioridad}
                       </Badge>
                     </div>
@@ -145,7 +145,7 @@ export function DespachosClientView({
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-border/60 text-muted-foreground font-mono uppercase text-[10px] tracking-wider">
+                  <tr className="border-b border-border/60 text-muted-foreground font-mono uppercase text-[11px] tracking-wider">
                     <th className="py-2.5 px-3">Código OT</th>
                     <th className="py-2.5 px-3">Producto</th>
                     <th className="py-2.5 px-3">Cliente</th>

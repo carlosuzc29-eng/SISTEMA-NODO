@@ -8,7 +8,7 @@ import { OtCard } from "./ot-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { AreaRow, EstadoOT } from "@/types/database";
+import { AreaRow } from "@/types/database";
 import { getEstadoOtMetadata } from "@/config/estados";
 import {
   Search,
@@ -148,7 +148,7 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
             <button
               type="button"
               onClick={() => setVista("tabla")}
-              className={`p-1.5 rounded-lg transition-all ${
+              className={`p-1.5 rounded-lg transition-[background-color,color,box-shadow] duration-120 ease-[var(--ease-out)] ${
                 vista === "tabla" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
               }`}
             >
@@ -157,7 +157,7 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
             <button
               type="button"
               onClick={() => setVista("tarjetas")}
-              className={`p-1.5 rounded-lg transition-all ${
+              className={`p-1.5 rounded-lg transition-[background-color,color,box-shadow] duration-120 ease-[var(--ease-out)] ${
                 vista === "tarjetas" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
               }`}
             >
@@ -204,7 +204,7 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
                             <span className="font-medium text-foreground group-hover:text-primary transition-colors block truncate max-w-[200px]">
                               {o.titulo}
                             </span>
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-[11px] text-muted-foreground">
                               {o.tipo_trabajo.nombre}
                             </span>
                           </Link>
@@ -214,7 +214,7 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
                             {o.cliente.empresa || o.cliente.nombre}
                           </span>
                           {o.cliente.empresa && (
-                            <span className="text-[10px] text-muted-foreground">
+                            <span className="text-[11px] text-muted-foreground">
                               {o.cliente.nombre}
                             </span>
                           )}
@@ -226,7 +226,7 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
                           {o.area_actual ? (
                             <Badge
                               variant="outline"
-                              className="font-medium text-[10px] font-mono py-0"
+                              className="font-medium text-[11px] font-mono py-0"
                               style={{
                                 borderColor: o.area_actual.color_hex,
                                 color: o.area_actual.color_hex,
@@ -244,7 +244,7 @@ export function OtTable({ ordenes, areas }: OtTableProps) {
                         </td>
                         <td className="py-2 px-3.5">
                           <span
-                            className={`inline-block text-[10px] px-2 py-0.5 rounded-md font-mono font-medium ${infoEstado.badgeClass}`}
+                            className={`inline-block text-[11px] px-2 py-0.5 rounded-md font-mono font-medium ${infoEstado.badgeClass}`}
                           >
                             {infoEstado.label}
                           </span>

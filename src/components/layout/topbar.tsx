@@ -76,7 +76,10 @@ export function Topbar({ profile }: TopbarProps) {
 
   return (
     <>
-      <header className="h-14 border-b border-border/50 bg-background/70 backdrop-blur-md sticky top-0 z-30 px-4 sm:px-6 flex items-center justify-between gap-4">
+      {/* Tira CMYK móvil en la arista superior */}
+      <div className="cmyk-strip md:hidden sticky top-0 z-40" />
+
+      <header className="h-14 border-b border-border/70 bg-card/75 backdrop-blur-md sticky top-0 md:top-0 z-30 px-4 sm:px-6 flex items-center justify-between gap-4">
         {/* Breadcrumbs de Navegación */}
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
           <Link
@@ -113,11 +116,11 @@ export function Topbar({ profile }: TopbarProps) {
           <button
             type="button"
             onClick={() => setIsCommandOpen(true)}
-            className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground bg-muted/50 border border-border/60 rounded-lg hover:border-foreground/20 hover:text-foreground transition-colors"
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground bg-muted/60 border border-border/80 rounded-xl hover:border-foreground/30 hover:text-foreground transition-colors"
           >
             <Search className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-[11px]">Buscar...</span>
-            <kbd className="inline-flex h-4 items-center gap-0.5 rounded border border-border/70 bg-card px-1 font-mono text-[9px] text-muted-foreground">
+            <kbd className="inline-flex h-4 items-center gap-0.5 rounded border border-border/80 bg-card px-1 font-mono text-[11px] text-muted-foreground">
               <span>⌘</span>K
             </kbd>
           </button>
@@ -126,7 +129,7 @@ export function Topbar({ profile }: TopbarProps) {
             <Button
               asChild
               size="sm"
-              className="h-8 px-3 rounded-lg text-xs font-semibold shadow-xs"
+              className="h-8 px-3 rounded-xl text-xs font-semibold shadow-xs"
             >
               <Link href="/ordenes/nueva">
                 <Plus className="h-3.5 w-3.5 mr-1" />

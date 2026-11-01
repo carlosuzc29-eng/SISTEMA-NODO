@@ -68,7 +68,7 @@ export function EntregasClientView({
                     <span className="font-mono font-bold text-sm text-foreground">
                       {orden.codigo}
                     </span>
-                    <Badge variant="outline" className="text-[10px] font-mono font-semibold uppercase">
+                    <Badge variant="outline" className="text-[11px] font-mono font-semibold uppercase">
                       {orden.prioridad}
                     </Badge>
                   </div>
@@ -153,7 +153,7 @@ export function EntregasClientView({
                       <span className="font-medium text-emerald-600 dark:text-emerald-400 block">
                         Retirado por: {orden.entregada_a || "Cliente"}
                       </span>
-                      <span className="text-[10px] text-muted-foreground font-mono">
+                      <span className="text-[11px] text-muted-foreground font-mono">
                         {formatFechaHora(orden.entregada_en)}
                       </span>
                     </div>

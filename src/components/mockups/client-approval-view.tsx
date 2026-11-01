@@ -48,28 +48,31 @@ export function ClientApprovalView({
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
+      {/* Tira CMYK de Control de Color de Prensa */}
+      <div className="cmyk-strip sticky top-0 z-50" />
+
       {/* Cabecera de marca con logo oficial NODO 26 */}
-      <header className="sticky top-0 z-40 bg-card/85 backdrop-blur-xl border-b border-border/80 px-4 py-3 card-highlight">
+      <header className="sticky top-[3.5px] z-40 bg-card/85 backdrop-blur-xl border-b border-border px-4 py-3 card-highlight">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-card border border-border flex items-center justify-center p-1.5 shadow-xs">
               <Image
                 src="/brand/logo.svg"
                 alt="NODO 26 Logo"
-                width={24}
-                height={24}
-                className="w-6 h-6"
+                width={26}
+                height={26}
+                className="w-6.5 h-6.5"
                 priority
               />
             </div>
             <div>
-              <div className="text-xs font-bold text-foreground tracking-tight flex items-center gap-1.5 font-mono">
+              <div className="text-xs font-bold text-foreground tracking-tight flex items-center gap-1.5 font-display">
                 {brand.nombre}
-                <span className="text-[10px] font-normal px-1.5 py-0.2 rounded bg-muted text-muted-foreground">
+                <span className="text-[11px] font-normal px-2 py-0.2 rounded-md bg-muted text-muted-foreground font-mono">
                   Aprobación Digital
                 </span>
               </div>
-              <div className="text-[11px] text-muted-foreground font-mono">
+              <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
                 {orden.codigo} • {orden.titulo}
               </div>
             </div>
@@ -83,7 +86,7 @@ export function ClientApprovalView({
               </Badge>
             )}
             {isApproved && (
-              <Badge variant="success" dot className="font-mono text-xs">
+              <Badge variant="success" dot className="font-mono text-xs font-semibold">
                 Arte Aprobado
               </Badge>
             )}
@@ -100,7 +103,7 @@ export function ClientApprovalView({
       <main className="flex-1 max-w-5xl mx-auto w-full p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Columna Izquierda: Visor 3D Interactivo */}
         <div className="lg:col-span-7 flex flex-col gap-3">
-          <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-sm card-highlight">
+          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs card-highlight crop-marks">
             <PackagingCanvas
               modeloTipo={mockup.modelo_tipo}
               anchoCm={Number(mockup.ancho_cm)}
@@ -125,24 +128,24 @@ export function ClientApprovalView({
         <div className="lg:col-span-5 flex flex-col justify-between space-y-4">
           <div className="space-y-4">
             {/* Mensaje de bienvenida */}
-            <div className="bg-card rounded-xl p-4 sm:p-5 border border-border/80 shadow-xs card-highlight">
-              <h1 className="text-sm font-semibold text-foreground mb-1">
+            <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border shadow-xs card-highlight">
+              <h1 className="text-base font-bold text-foreground mb-1 font-display">
                 Hola, {cliente.nombre}
               </h1>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Revisa el modelo tridimensional de tu producto. Verifica que los textos, colores, solapas y proporciones coincidan con tus especificaciones antes de iniciar la producción en máquina.
+                Revisa el modelo tridimensional de tu producto. Verifica que los textos, colores, solapas y proporciones coincidan con tus especificaciones antes de iniciar la producción en máquinas.
               </p>
             </div>
 
             {/* Ficha técnica resumida */}
-            <div className="bg-card rounded-xl p-4 sm:p-5 border border-border/80 shadow-xs card-highlight space-y-3">
+            <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border shadow-xs card-highlight space-y-3">
               <h2 className="label-caps text-muted-foreground flex items-center gap-1.5">
                 <FileCheck className="w-3.5 h-3.5" /> Especificaciones de Producción
               </h2>
 
               <div className="grid grid-cols-2 gap-2.5 text-xs">
-                <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-                  <div className="text-muted-foreground text-[10px] flex items-center gap-1 mb-0.5 label-caps">
+                <div className="bg-muted/40 p-2.5 rounded-xl border border-border/60">
+                  <div className="text-muted-foreground text-[11px] flex items-center gap-1 mb-0.5 label-caps">
                     <Package className="w-3 h-3" /> Cantidad
                   </div>
                   <div className="font-mono font-bold tabular-nums text-foreground">
@@ -150,8 +153,8 @@ export function ClientApprovalView({
                   </div>
                 </div>
 
-                <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-                  <div className="text-muted-foreground text-[10px] flex items-center gap-1 mb-0.5 label-caps">
+                <div className="bg-muted/40 p-2.5 rounded-xl border border-border/60">
+                  <div className="text-muted-foreground text-[11px] flex items-center gap-1 mb-0.5 label-caps">
                     <Layers className="w-3 h-3" /> Dimensiones
                   </div>
                   <div className="font-mono font-bold tabular-nums text-foreground text-[11px]">
@@ -159,8 +162,8 @@ export function ClientApprovalView({
                   </div>
                 </div>
 
-                <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-                  <div className="text-muted-foreground text-[10px] flex items-center gap-1 mb-0.5 label-caps">
+                <div className="bg-muted/40 p-2.5 rounded-xl border border-border/60">
+                  <div className="text-muted-foreground text-[11px] flex items-center gap-1 mb-0.5 label-caps">
                     <Sparkles className="w-3 h-3" /> Sustrato
                   </div>
                   <div className="font-medium text-foreground truncate text-[11px]">
@@ -168,8 +171,8 @@ export function ClientApprovalView({
                   </div>
                 </div>
 
-                <div className="bg-muted/40 p-2.5 rounded-lg border border-border/50">
-                  <div className="text-muted-foreground text-[10px] flex items-center gap-1 mb-0.5 label-caps">
+                <div className="bg-muted/40 p-2.5 rounded-xl border border-border/60">
+                  <div className="text-muted-foreground text-[11px] flex items-center gap-1 mb-0.5 label-caps">
                     <Calendar className="w-3 h-3" /> Entrega
                   </div>
                   <div className="font-medium text-foreground text-[11px]">
@@ -179,50 +182,57 @@ export function ClientApprovalView({
               </div>
 
               {/* Acabados adicionales */}
-              {(mockup.acabado_barniz_uv || mockup.acabado_hot_stamping !== "ninguno") && (
+              {(mockup.acabado_barniz_uv || mockup.acabado_hot_stamping !== "ninguno" || mockup.acabado_relieve) && (
                 <div className="pt-2 border-t border-border/50 flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-mono text-muted-foreground">Acabados:</span>
+                  <span className="text-[11px] font-mono text-muted-foreground">Acabados:</span>
                   {mockup.acabado_barniz_uv && (
-                    <Badge variant="warning" className="text-[9px] font-mono py-0">
+                    <Badge variant="cyan" className="text-[11px] font-mono py-0">
                       Barniz UV Sectorizado
                     </Badge>
                   )}
                   {mockup.acabado_hot_stamping !== "ninguno" && (
-                    <Badge variant="warning" className="text-[9px] font-mono py-0">
+                    <Badge variant="warning" className="text-[11px] font-mono py-0">
                       Hot Stamping {mockup.acabado_hot_stamping.toUpperCase()}
+                    </Badge>
+                  )}
+                  {mockup.acabado_relieve && (
+                    <Badge variant="secondary" className="text-[11px] font-mono py-0">
+                      Relieve (Emboss)
                     </Badge>
                   )}
                 </div>
               )}
             </div>
 
-            {/* Comprobante de Aprobación o Rechazo si ya fue procesado */}
+            {/* Sello de Aprobación de Imprenta (con deleite sutil en celebración) */}
             {isApproved && (
-              <div className="bg-[var(--success-subtle)] border border-[var(--success)]/40 rounded-xl p-4 text-xs text-[var(--success)] space-y-1">
-                <div className="font-bold flex items-center gap-1.5 text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-[var(--success)]" /> ¡Arte Aprobado con Éxito!
+              <div className="relative overflow-hidden rounded-2xl border border-[var(--color-registry-green)]/40 bg-[var(--color-registry-green-subtle)] p-4 text-xs text-[var(--color-registry-green-foreground)] space-y-1.5 shadow-xs animate-in zoom-in-[0.97] duration-200 ease-[var(--ease-out)]">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-[var(--color-registry-green)]" />
+                <div className="font-bold flex items-center gap-2 text-sm font-display">
+                  <CheckCircle2 className="w-5 h-5 text-[var(--color-registry-green)]" /> ¡Arte Aprobado para Prensa!
                 </div>
                 <p className="text-foreground/90 text-xs">
-                  Confirmado por <strong>{aprobacion.aprobado_por_nombre}</strong>
+                  Confirmado por <strong>{aprobacion.aprobado_por_nombre || cliente.nombre}</strong>
                   {aprobacion.aprobado_por_cargo_dni && ` (${aprobacion.aprobado_por_cargo_dni})`}.
                 </p>
                 {aprobacion.fecha_respuesta && (
-                  <p className="text-[10px] font-mono text-muted-foreground">
-                    Fecha: {format(new Date(aprobacion.fecha_respuesta), "dd/MM/yyyy HH:mm", { locale: es })}
+                  <p className="text-[11px] font-mono text-muted-foreground">
+                    Certificado digital: {format(new Date(aprobacion.fecha_respuesta), "dd/MM/yyyy HH:mm", { locale: es })}
                   </p>
                 )}
               </div>
             )}
 
             {isRejected && (
-              <div className="bg-destructive-subtle border border-destructive/40 rounded-xl p-4 text-xs text-destructive space-y-1">
-                <div className="font-bold flex items-center gap-1.5 text-sm">
-                  <AlertCircle className="w-4 h-4 text-destructive" /> Correcciones Solicitadas
+              <div className="relative overflow-hidden rounded-2xl border border-destructive/40 bg-[var(--destructive-subtle)] p-4 text-xs text-destructive space-y-1.5 shadow-xs animate-in zoom-in-[0.97] duration-200 ease-[var(--ease-out)]">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-destructive" />
+                <div className="font-bold flex items-center gap-2 text-sm font-display">
+                  <AlertCircle className="w-5 h-5 text-destructive" /> Correcciones Solicitadas
                 </div>
                 <p className="text-foreground/90 text-xs italic">
                   &quot;{aprobacion.comentarios_cliente}&quot;
                 </p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[11px] text-muted-foreground">
                   El equipo de pre-prensa está trabajando en los ajustes solicitados.
                 </p>
               </div>
@@ -235,7 +245,7 @@ export function ClientApprovalView({
               <Button
                 type="button"
                 onClick={() => setModalType("approve")}
-                className="w-full h-12 bg-[var(--success)] hover:opacity-90 text-[var(--success-foreground)] rounded-xl font-semibold text-sm shadow-xs gap-2 active:scale-[0.98] transition-[transform,opacity] duration-150 ease-[var(--ease-out)]"
+                className="w-full h-12 bg-[var(--color-registry-green)] hover:opacity-95 text-[var(--color-card)] rounded-xl font-bold text-sm shadow-xs gap-2 active:scale-[0.97] transition-[transform,opacity] duration-150 ease-[var(--ease-out)]"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 Aprobar Arte para Producción
@@ -245,9 +255,9 @@ export function ClientApprovalView({
                 type="button"
                 variant="outline"
                 onClick={() => setModalType("reject")}
-                className="w-full h-10 border-border/80 text-muted-foreground hover:text-foreground rounded-xl font-medium text-xs gap-1.5 active:scale-[0.98] transition-[transform,background-color] duration-150 ease-[var(--ease-out)]"
+                className="w-full h-10 border-border text-muted-foreground hover:text-foreground rounded-xl font-medium text-xs gap-1.5 active:scale-[0.97] transition-[transform,background-color] duration-150 ease-[var(--ease-out)]"
               >
-                <AlertCircle className="w-3.5 h-3.5 text-[var(--warning)]" />
+                <AlertCircle className="w-3.5 h-3.5 text-[var(--ink-yellow-foreground)]" />
                 Solicitar Ajustes o Cambios
               </Button>
             </div>
@@ -261,7 +271,7 @@ export function ClientApprovalView({
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[11px] text-[var(--success)] hover:underline font-mono"
+              className="inline-flex items-center gap-1.5 text-[11px] text-[var(--color-registry-green)] hover:underline font-mono"
             >
               <MessageCircle className="w-3.5 h-3.5" />
               ¿Dudas con el arte? Contactar al diseñador

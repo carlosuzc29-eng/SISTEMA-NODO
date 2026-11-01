@@ -9,7 +9,6 @@ import {
   Check,
   CheckCheck,
   MessageSquare,
-  Upload,
 } from "lucide-react";
 
 interface TimelineFeedProps {
@@ -102,12 +101,12 @@ export function TimelineFeed({ eventos }: TimelineFeedProps) {
             </div>
 
             {/* Contenido del Evento */}
-            <div className="flex-1 rounded-xl border border-border/60 bg-muted/20 p-3.5 transition-all group-hover:bg-muted/40">
+            <div className="flex-1 rounded-xl border border-border/60 bg-muted/20 p-3.5 transition-[background-color,border-color] duration-150 ease-[var(--ease-out)] group-hover:bg-muted/40">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-semibold text-xs sm:text-sm text-foreground">
                   {info.titulo}
                 </span>
-                <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+                <span className="text-[11px] text-muted-foreground shrink-0 tabular-nums">
                   {formatTiempoRelativo(evento.created_at)}
                 </span>
               </div>
@@ -116,7 +115,7 @@ export function TimelineFeed({ eventos }: TimelineFeedProps) {
                   {info.desc}
                 </p>
               )}
-              <div className="text-[10px] text-muted-foreground/60 mt-1.5 font-mono">
+              <div className="text-[11px] text-muted-foreground/70 mt-1.5 font-mono">
                 {formatFechaHora(evento.created_at)}
               </div>
             </div>

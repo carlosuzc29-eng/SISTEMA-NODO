@@ -117,7 +117,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     </div>
                     <span className="font-medium">{item.label}</span>
                   </div>
-                  <span className="text-[10px] uppercase font-semibold tracking-wider text-muted-foreground/60 label-caps">
+                  <span className="text-[11px] uppercase font-semibold tracking-wider text-muted-foreground/60 label-caps">
                     {item.group}
                   </span>
                 </button>
@@ -128,10 +128,10 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
         {/* Pie del modal con tips de teclado */}
         <div className="px-4 py-2 border-t border-border/60 bg-muted/20 flex items-center justify-between text-[11px] text-muted-foreground">
-          <span className="font-mono text-[10px]">Nodo 26 Command</span>
+          <span className="font-mono text-[11px]">Nodo 26 Command</span>
           <div className="flex items-center gap-2">
             <span>Navegar</span>
-            <kbd className="px-1.5 py-0.5 rounded border bg-card text-[9px] font-mono">ESC</kbd>
+            <kbd className="px-1.5 py-0.5 rounded border bg-card text-[11px] font-mono">ESC</kbd>
             <span>para cerrar</span>
           </div>
         </div>

@@ -254,10 +254,10 @@ export function MockupEditor({
                 key={t.id}
                 type="button"
                 onClick={() => setModeloTipo(t.id as TipoModeloEmpaque)}
-                className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition-all text-center ${
+                className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition-[background-color,border-color,color] duration-120 ease-[var(--ease-out)] text-center ${
                   modeloTipo === t.id
-                    ? "border-violet-600 bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 shadow-sm"
-                    : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                    ? "border-primary bg-primary/10 text-primary shadow-xs"
+                    : "border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 }`}
               >
                 {t.label}
@@ -401,13 +401,13 @@ export function MockupEditor({
         </div>
 
         {/* Módulo de Aprobación y WhatsApp */}
-        <div className="bg-gradient-to-br from-violet-50 to-indigo-50/50 dark:from-violet-950/30 dark:to-slate-900 rounded-2xl p-5 border border-violet-200 dark:border-violet-900/60 shadow-sm space-y-4">
+        <div className="bg-muted/30 rounded-2xl p-5 border border-border/80 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold text-violet-900 dark:text-violet-300 uppercase tracking-wider flex items-center gap-1.5">
-              <LinkIcon className="w-3.5 h-3.5" /> Aprobación del Cliente
+            <h3 className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+              <LinkIcon className="w-3.5 h-3.5 text-primary" /> Aprobación del Cliente
             </h3>
             {activeToken && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400">
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-registry-green)]/15 text-[var(--color-registry-green)] border border-[var(--color-registry-green)]/30">
                 Enlace Activo
               </span>
             )}
@@ -415,7 +415,7 @@ export function MockupEditor({
 
           {!activeToken ? (
             <div className="space-y-3">
-              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Genera un enlace público no adivinable para que el cliente revise su empaque 3D y confirme formalmente desde su teléfono.
               </p>
               <Button
@@ -464,7 +464,7 @@ export function MockupEditor({
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-xl text-xs font-bold bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-md shadow-emerald-500/20 active:scale-[0.99] transition-all"
+                className="w-full h-11 inline-flex items-center justify-center gap-2 rounded-xl text-xs font-bold bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-md shadow-emerald-500/20 active:scale-[0.98] transition-[background-color,transform] duration-120 ease-[var(--ease-out)]"
               >
                 <MessageCircle className="w-4 h-4 fill-white" />
                 Enviar por WhatsApp al Cliente

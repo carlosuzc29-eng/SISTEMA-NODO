@@ -16,22 +16,25 @@ interface FlowMapProps {
 
 const FASES_TITULOS: Record<
   FaseArea,
-  { label: string; desc: string; badgeClass: string }
+  { label: string; desc: string; badgeClass: string; inkBorder: string }
 > = {
   pre_prensa: {
     label: "Fase 1: Pre-prensa",
     desc: "Diseño, CTP/Planchas y Materiales",
-    badgeClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    badgeClass: "bg-[var(--ink-cyan-subtle)] text-[var(--ink-cyan-foreground)] border-[var(--ink-cyan)]/30",
+    inkBorder: "border-[var(--ink-cyan)]",
   },
   prensa: {
     label: "Fase 2: Prensa",
     desc: "Impresión Offset / Digital y Acabados",
-    badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    badgeClass: "bg-[var(--ink-magenta-subtle)] text-[var(--ink-magenta-foreground)] border-[var(--ink-magenta)]/30",
+    inkBorder: "border-[var(--ink-magenta)]",
   },
   post_prensa: {
     label: "Fase 3: Post-prensa",
     desc: "Troquelado, Corte, Calidad, Embalaje y Despacho",
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    badgeClass: "bg-[var(--color-registry-green-subtle)] text-[var(--color-registry-green-foreground)] border-[var(--color-registry-green)]/30",
+    inkBorder: "border-[var(--color-registry-green)]",
   },
 };
 
@@ -49,9 +52,9 @@ export function FlowMap({ areasMetricas, isTvMode = false }: FlowMapProps) {
 
         return (
           <div key={fase} className="space-y-3">
-            <div className="flex items-center justify-between pb-1.5 border-b border-border/60">
+            <div className="flex items-center justify-between pb-2 border-b border-border/70">
               <div className="flex items-center gap-2">
-                <span className={cn("text-xs font-bold uppercase tracking-wider", isTvMode ? "text-sm" : "text-xs")}>
+                <span className={cn("font-bold uppercase tracking-wider font-display", isTvMode ? "text-base" : "text-xs")}>
                   {configFase.label}
                 </span>
                 <span className="text-xs text-muted-foreground hidden sm:inline">
@@ -60,7 +63,7 @@ export function FlowMap({ areasMetricas, isTvMode = false }: FlowMapProps) {
               </div>
               <span
                 className={cn(
-                  "text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border font-semibold",
+                  "text-[11px] font-mono uppercase px-2.5 py-0.5 rounded-md border font-semibold",
                   configFase.badgeClass
                 )}
               >
@@ -78,7 +81,7 @@ export function FlowMap({ areasMetricas, isTvMode = false }: FlowMapProps) {
                   : "grid-cols-1 sm:grid-cols-2"
               )}
             >
-              {areasDeFase.map(({ area, enCola, enProceso, pausadas, totalActivas, esCuelloBotella }) => (
+              {areasDeFase.map(({ area, enCola, enProceso, pausadas, totalActivas, esCuelloBotella }, idx) => (
                 <div
                   key={area.id}
                   className={cn(
@@ -86,10 +89,11 @@ export function FlowMap({ areasMetricas, isTvMode = false }: FlowMapProps) {
                     esCuelloBotella
                       ? "border-destructive/60 bg-destructive/5 shadow-xs ring-1 ring-destructive/20"
                       : "border-border/80 hover:border-primary/40",
-                    isTvMode && "p-4"
+                    isTvMode && "p-4 crop-marks"
                   )}
+                  style={{ animationDelay: `${idx * 40}ms` }}
                 >
-                  {/* Barra de color de área superior */}
+                  {/* Barra de color de estación superior con tono de proceso */}
                   <div
                     className="absolute top-0 left-0 right-0 h-1"
                     style={{ backgroundColor: area.color_hex }}
@@ -97,12 +101,12 @@ export function FlowMap({ areasMetricas, isTvMode = false }: FlowMapProps) {
 
                   <div>
                     <div className="flex items-center justify-between pt-0.5">
-                      <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                      <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
                         0{area.orden}
                       </span>
                       <div className="flex items-center gap-1.5">
                         {esCuelloBotella && (
-                          <Badge variant="destructive" className="text-[9px] py-0 px-1 gap-1 font-mono font-semibold">
+                          <Badge variant="destructive" className="text-[11px] py-0 px-1.5 gap-1 font-mono font-semibold">
                             <AlertTriangle className="h-2.5 w-2.5" />
                             <span>Cuello</span>
                           </Badge>
@@ -116,21 +120,21 @@ export function FlowMap({ areasMetricas, isTvMode = false }: FlowMapProps) {
 
                     <h4
                       className={cn(
-                        "font-semibold text-foreground mt-1 truncate group-hover:text-primary transition-colors",
+                        "font-semibold text-foreground mt-1.5 truncate group-hover:text-primary transition-colors",
                         isTvMode ? "text-base" : "text-xs"
                       )}
                       title={area.nombre}
                     >
                       {area.nombre}
                     </h4>
-                    <span className="text-[10px] text-muted-foreground block font-mono">
-                      {totalActivas} {totalActivas === 1 ? "activa" : "activas"}
+                    <span className="text-[11px] text-muted-foreground block font-mono mt-0.5">
+                      {totalActivas} {totalActivas === 1 ? "orden activa" : "órdenes activas"}
                     </span>
 
                     {/* Contadores por Estado de Etapa */}
-                    <div className="grid grid-cols-3 gap-1 py-2 mt-2 border-y border-border/50 text-center">
+                    <div className="grid grid-cols-3 gap-1 py-2 mt-2.5 border-y border-border/50 text-center">
                       <div>
-                        <span className="text-[9px] font-mono uppercase text-muted-foreground block">
+                        <span className="text-[11px] font-mono uppercase text-muted-foreground block">
                           Cola
                         </span>
                         <span className="text-xs font-mono font-bold tabular-nums text-foreground">
@@ -138,18 +142,18 @@ export function FlowMap({ areasMetricas, isTvMode = false }: FlowMapProps) {
                         </span>
                       </div>
                       <div>
-                        <span className="text-[9px] font-mono uppercase text-muted-foreground block">
+                        <span className="text-[11px] font-mono uppercase text-[var(--ink-magenta)] block">
                           Proc
                         </span>
-                        <span className="text-xs font-mono font-bold tabular-nums text-primary">
+                        <span className="text-xs font-mono font-bold tabular-nums text-[var(--ink-magenta)]">
                           {enProceso}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[9px] font-mono uppercase text-muted-foreground block">
+                        <span className="text-[11px] font-mono uppercase text-[var(--ink-yellow-foreground)] block">
                           Esp
                         </span>
-                        <span className="text-xs font-mono font-bold tabular-nums text-amber-500">
+                        <span className="text-xs font-mono font-bold tabular-nums text-[var(--ink-yellow-foreground)]">
                           {pausadas}
                         </span>
                       </div>
@@ -158,16 +162,16 @@ export function FlowMap({ areasMetricas, isTvMode = false }: FlowMapProps) {
 
                   {/* Enlace al Tablero de Área */}
                   {!isTvMode && (
-                    <div className="pt-2">
+                    <div className="pt-2.5">
                       <Button
                         asChild
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-between text-[11px] font-mono font-medium rounded-lg h-7 px-2 group-hover:bg-muted/70"
+                        className="w-full justify-between text-[11px] font-mono font-medium rounded-xl h-7 px-2.5 group-hover:bg-muted/70 transition-[background-color,color] duration-120 ease-[var(--ease-out)]"
                       >
                         <Link href={`/area/${area.slug}`}>
-                          <span>Abrir</span>
-                          <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                          <span>Abrir tablero</span>
+                          <ArrowRight className="h-3 w-3 transition-transform duration-150 ease-[var(--ease-out)] group-hover:translate-x-0.5" />
                         </Link>
                       </Button>
                     </div>

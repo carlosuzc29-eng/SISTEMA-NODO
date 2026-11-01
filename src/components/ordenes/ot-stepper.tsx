@@ -12,7 +12,6 @@ import {
   Truck,
   Timer,
   SkipForward,
-  AlertTriangle,
   RotateCcw,
   ArrowRight,
 } from "lucide-react";
@@ -34,15 +33,15 @@ const ICON_COMPONENTS: Record<string, React.ElementType> = {
 const FASES_TITULOS: Record<FaseArea, { label: string; badgeClass: string }> = {
   pre_prensa: {
     label: "Pre-prensa",
-    badgeClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+    badgeClass: "bg-[var(--ink-cyan-subtle)] text-[var(--ink-cyan-foreground)] border-[var(--ink-cyan)]/30",
   },
   prensa: {
     label: "Prensa",
-    badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+    badgeClass: "bg-[var(--ink-magenta-subtle)] text-[var(--ink-magenta-foreground)] border-[var(--ink-magenta)]/30",
   },
   post_prensa: {
     label: "Post-prensa",
-    badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+    badgeClass: "bg-[var(--color-registry-green-subtle)] text-[var(--color-registry-green-foreground)] border-[var(--color-registry-green)]/30",
   },
 };
 
@@ -73,10 +72,10 @@ export function OtStepper({ etapas, rechazos = [] }: OtStepperProps) {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-xs uppercase tracking-wider">
+                <span className="font-bold text-xs uppercase tracking-wider font-display">
                   Reproceso de Calidad Registrado
                 </span>
-                <span className="text-[10px] font-mono bg-destructive/20 px-2 py-0.2 rounded font-bold">
+                <span className="text-[11px] font-mono bg-destructive/20 px-2 py-0.2 rounded font-bold">
                   {new Date(ultimoRechazo.created_at).toLocaleDateString("es-ES")}
                 </span>
               </div>
@@ -94,14 +93,14 @@ export function OtStepper({ etapas, rechazos = [] }: OtStepperProps) {
           </div>
 
           {ultimoRechazo.cantidad_afectada && (
-            <span className="text-xs font-mono font-bold shrink-0 bg-background/80 px-2.5 py-1 rounded-lg border border-destructive/30">
+            <span className="text-xs font-mono font-bold shrink-0 bg-card px-2.5 py-1 rounded-lg border border-destructive/30">
               {ultimoRechazo.cantidad_afectada} pliegos afectados
             </span>
           )}
         </div>
       )}
 
-      {/* Flujo agrupado en 3 Fases */}
+      {/* Flujo agrupado en 3 Fases («Recorrido del Pliego») */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {fases.map((fase) => {
           const configFase = FASES_TITULOS[fase];
@@ -114,12 +113,12 @@ export function OtStepper({ etapas, rechazos = [] }: OtStepperProps) {
               className="rounded-2xl border border-border/80 bg-muted/20 p-3.5 space-y-3"
             >
               <div className="flex items-center justify-between pb-2 border-b border-border/60">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-display">
                   Fase: {configFase.label}
                 </span>
                 <span
                   className={cn(
-                    "text-[10px] font-mono uppercase px-2 py-0.5 rounded-md border font-semibold",
+                    "text-[11px] font-mono uppercase px-2 py-0.5 rounded-md border font-semibold",
                     configFase.badgeClass
                   )}
                 >
@@ -143,11 +142,11 @@ export function OtStepper({ etapas, rechazos = [] }: OtStepperProps) {
                     <div
                       key={etapa.id}
                       className={cn(
-                        "p-2.5 rounded-xl border text-xs transition-all flex items-center justify-between",
+                        "p-2.5 rounded-xl border text-xs transition-[background-color,border-color,box-shadow] duration-150 ease-[var(--ease-out)] flex items-center justify-between",
                         isEnProceso
-                          ? "bg-primary/10 border-primary ring-1 ring-primary/30"
+                          ? "bg-[var(--ink-magenta-subtle)] border-[var(--ink-magenta)] ring-1 ring-[var(--ink-magenta)]/30 shadow-xs"
                           : isEnEspera
-                          ? "bg-amber-500/10 border-amber-500/40"
+                          ? "bg-[var(--ink-yellow-subtle)] border-[var(--ink-yellow)]/40"
                           : isTerminada
                           ? "bg-card border-border/70"
                           : isOmitida
@@ -160,11 +159,11 @@ export function OtStepper({ etapas, rechazos = [] }: OtStepperProps) {
                           className={cn(
                             "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 border",
                             isTerminada
-                              ? "bg-[var(--success)] border-[var(--success)] text-[var(--success-foreground)]"
+                              ? "bg-[var(--color-registry-green)] border-[var(--color-registry-green)] text-[var(--color-card)]"
                               : isEnProceso
-                              ? "bg-primary border-primary text-primary-foreground"
+                              ? "bg-[var(--ink-magenta)] border-[var(--ink-magenta)] text-[var(--color-card)]"
                               : isEnEspera
-                              ? "bg-amber-500 border-amber-500 text-white"
+                              ? "bg-[var(--ink-yellow)] border-[var(--ink-yellow)] text-[var(--ink-yellow-foreground)]"
                               : "bg-muted border-border text-muted-foreground"
                           )}
                         >
@@ -177,12 +176,12 @@ export function OtStepper({ etapas, rechazos = [] }: OtStepperProps) {
                               {etapa.area.nombre}
                             </span>
                             {etapa.intento && etapa.intento > 1 && (
-                              <span className="text-[9px] bg-destructive/15 text-destructive font-mono font-bold px-1 rounded">
+                              <span className="text-[11px] bg-destructive/15 text-destructive font-mono font-bold px-1.5 py-0.2 rounded">
                                 #{etapa.intento}
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-muted-foreground block truncate">
+                          <span className="text-[11px] text-muted-foreground block truncate">
                             {info.label}
                           </span>
                         </div>
@@ -190,12 +189,12 @@ export function OtStepper({ etapas, rechazos = [] }: OtStepperProps) {
 
                       <div className="flex items-center gap-1.5 shrink-0 pl-2">
                         {esDestinoRechazo && (
-                          <span className="text-[9px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded">
+                          <span className="text-[11px] font-bold text-destructive bg-destructive/10 px-1.5 py-0.5 rounded">
                             Reproceso
                           </span>
                         )}
                         {etapa.minutos_trabajados > 0 && (
-                          <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
+                          <span className="text-[11px] font-mono text-muted-foreground tabular-nums">
                             {etapa.minutos_trabajados}m
                           </span>
                         )}

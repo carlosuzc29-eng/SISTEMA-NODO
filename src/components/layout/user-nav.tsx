@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, User, Shield, Layers } from "lucide-react";
+import { LogOut, Shield, Layers } from "lucide-react";
 import { cerrarSesion } from "@/features/auth/actions";
 import { ProfileRow, AreaRow } from "@/types/database";
 
@@ -40,16 +40,16 @@ export function UserNav({ profile }: UserNavProps) {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="relative h-10 flex items-center gap-2.5 px-2.5 rounded-xl hover:bg-accent/70 border border-transparent hover:border-border/60 transition-all"
+          className="relative h-10 flex items-center gap-2.5 px-2.5 rounded-xl hover:bg-accent/70 border border-transparent hover:border-border/60 transition-[background-color,border-color] duration-150 ease-[var(--ease-out)]"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary font-semibold text-sm">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--ink-magenta-subtle)] text-[var(--ink-magenta)] border border-[var(--ink-magenta)]/20 font-bold text-sm">
             {profile.nombre_completo.charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col items-start text-left text-xs hidden sm:flex">
-            <span className="font-medium text-foreground truncate max-w-[120px]">
+            <span className="font-semibold text-foreground truncate max-w-[120px]">
               {profile.nombre_completo}
             </span>
-            <span className="text-muted-foreground text-[10px]">
+            <span className="text-muted-foreground text-[11px]">
               {rolLabel[profile.rol] || profile.rol}
             </span>
           </div>
@@ -62,18 +62,18 @@ export function UserNav({ profile }: UserNavProps) {
             <p className="text-sm font-semibold leading-none text-foreground">
               {profile.nombre_completo}
             </p>
-            <p className="text-xs leading-none text-muted-foreground">
+            <p className="text-xs leading-none text-muted-foreground font-mono mt-0.5">
               @{profile.usuario}
             </p>
-            <div className="pt-1.5 flex flex-wrap gap-1">
-              <Badge variant="secondary" className="text-[10px] uppercase font-bold">
+            <div className="pt-2 flex flex-wrap gap-1">
+              <Badge variant="secondary" className="text-[11px] uppercase font-bold">
                 <Shield className="h-2.5 w-2.5 mr-1" />
                 {rolLabel[profile.rol] || profile.rol}
               </Badge>
               {profile.area && (
                 <Badge
                   variant="outline"
-                  className="text-[10px] font-medium"
+                  className="text-[11px] font-medium"
                   style={{ borderColor: profile.area.color_hex }}
                 >
                   <Layers className="h-2.5 w-2.5 mr-1" />

@@ -108,15 +108,16 @@ export function OtCard({
 
   useEffect(() => {
     if (etapaActual?.estado !== "secando" || !etapaActual.secado_hasta) {
-      setSegundosRestantesSecado(null);
       return;
     }
 
-    const timer = setInterval(() => {
+    const updateTimer = () => {
       const diff = differenceInSeconds(new Date(etapaActual.secado_hasta!), new Date());
       setSegundosRestantesSecado(Math.max(0, diff));
-    }, 1000);
+    };
 
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
     return () => clearInterval(timer);
   }, [etapaActual?.estado, etapaActual?.secado_hasta]);
 
@@ -160,8 +161,8 @@ export function OtCard({
           : "border-border/80"
       )}
     >
-      {/* Semáforo como barra lateral de color */}
-      <div className={cn("absolute left-0 top-0 bottom-0 w-1", urgencyBarColor)} />
+      {/* Semáforo como barra lateral de color (más gruesa y semántica) */}
+      <div className={cn("absolute left-0 top-0 bottom-0 w-1.5 rounded-l", urgencyBarColor)} />
 
       {/* Cabecera de la Tarjeta */}
       <div className="flex items-center justify-between gap-2 pb-1.5">
@@ -173,7 +174,7 @@ export function OtCard({
           {isUrgente && (
             <Badge
               variant="destructive"
-              className="text-[9px] font-mono uppercase tracking-wider py-0 px-1.5"
+              className="text-[11px] font-mono uppercase tracking-wider py-0 px-1.5"
             >
               Urgente
             </Badge>
@@ -183,21 +184,21 @@ export function OtCard({
           {esReproceso && (
             <Badge
               variant="outline"
-              className="text-[9px] bg-destructive/10 text-destructive border-destructive/30 font-semibold py-0 px-1.5 gap-1"
+              className="text-[11px] bg-destructive/10 text-destructive border-destructive/30 font-semibold py-0 px-1.5 gap-1"
             >
               <AlertTriangle className="h-2.5 w-2.5" />
-              Reproceso (intento {etapaActual?.intento})
+              Reproceso (#{etapaActual?.intento})
             </Badge>
           )}
         </div>
 
         <div className="flex items-center gap-1.5">
           {tiempoEnEstado && (
-            <span className="text-[10px] text-muted-foreground/80 font-mono" title="Tiempo en este estado">
+            <span className="text-[11px] text-muted-foreground/80 font-mono" title="Tiempo en este estado">
               {tiempoEnEstado}
             </span>
           )}
-          <span className={cn("text-[10px] font-mono tabular-nums", urgencyTextClass)}>
+          <span className={cn("text-[11px] font-mono tabular-nums", urgencyTextClass)}>
             {urgencyText}
           </span>
         </div>
@@ -205,11 +206,11 @@ export function OtCard({
 
       {/* Información del Trabajo */}
       <div className="space-y-0.5 py-0.5">
-        <h4 className="font-medium text-xs text-foreground line-clamp-1 leading-snug">
+        <h4 className="font-semibold text-xs text-foreground line-clamp-1 leading-snug">
           {orden.titulo}
         </h4>
         <div className="flex items-center gap-1.5 pt-0.5">
-          <div className="h-4 w-4 rounded-full bg-muted border border-border/80 flex items-center justify-center text-[9px] font-mono font-bold text-muted-foreground shrink-0">
+          <div className="h-4 w-4 rounded-full bg-muted border border-border flex items-center justify-center text-[11px] font-mono font-bold text-muted-foreground shrink-0">
             {iniciales}
           </div>
           <p className="text-[11px] text-muted-foreground truncate">
@@ -224,21 +225,21 @@ export function OtCard({
           <Box className="h-3 w-3 shrink-0" />
           <span className="truncate">{orden.tipo_trabajo.nombre}</span>
         </div>
-        <div className="font-mono font-medium tabular-nums text-foreground bg-muted/60 px-1.5 py-0.5 rounded text-[10px]">
+        <div className="font-mono font-medium tabular-nums text-foreground bg-muted/60 px-1.5 py-0.5 rounded text-[11px]">
           {orden.cantidad.toLocaleString("es-ES")} uds
         </div>
       </div>
 
-      {/* Bloque especial para tarjeta en espera */}
+      {/* Bloque especial para tarjeta en espera con tokens CMYK */}
       {etapaActual && (
         <>
           {/* Motivo de espera: SECANDO */}
           {etapaActual.estado === "secando" && (
-            <div className="mt-2 p-2 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-300 text-xs space-y-1">
+            <div className="mt-2 p-2.5 rounded-xl bg-[var(--ink-cyan-subtle)] border border-[var(--ink-cyan)]/30 text-[var(--ink-cyan-foreground)] text-xs space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1 font-semibold text-[11px]">
-                  <Wind className="h-3.5 w-3.5 animate-pulse" />
-                  Secado en progreso
+                <span className="flex items-center gap-1.5 font-semibold text-[11px]">
+                  <Wind className="h-3.5 w-3.5 text-[var(--ink-cyan)]" />
+                  Secado en reposo
                 </span>
                 <span className="font-mono font-bold text-[11px] tabular-nums">
                   {secadoTerminado
@@ -248,9 +249,22 @@ export function OtCard({
                     : "Secando"}
                 </span>
               </div>
+              {/* Barra de progreso real de secado (sin pulso infinito) */}
+              <div className="h-1.5 w-full bg-[var(--ink-cyan)]/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[var(--ink-cyan)] transition-[width] duration-1000 ease-linear rounded-full"
+                  style={{
+                    width: `${
+                      segundosRestantesSecado !== null
+                        ? Math.max(5, Math.min(100, Math.round(((14400 - segundosRestantesSecado) / 14400) * 100)))
+                        : 20
+                    }%`,
+                  }}
+                />
+              </div>
               {etapaActual.secado_hasta && (
-                <p className="text-[10px] opacity-80">
-                  Hasta: {format(new Date(etapaActual.secado_hasta), "dd/MM HH:mm")}
+                <p className="text-[11px] opacity-80 font-mono">
+                  Fin estimado: {format(new Date(etapaActual.secado_hasta), "dd/MM HH:mm")}
                 </p>
               )}
             </div>
@@ -258,14 +272,14 @@ export function OtCard({
 
           {/* Motivo de espera: PROVEEDOR */}
           {etapaActual.estado === "esperando_proveedor" && (
-            <div className="mt-2 p-2 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-300 text-xs space-y-0.5">
+            <div className="mt-2 p-2.5 rounded-xl bg-[var(--color-pantone-orange-subtle)] border border-[var(--color-pantone-orange)]/30 text-[var(--color-pantone-orange-foreground)] text-xs space-y-1">
               <div className="flex items-center justify-between font-semibold text-[11px]">
-                <span className="flex items-center gap-1">
-                  <Truck className="h-3.5 w-3.5" />
+                <span className="flex items-center gap-1.5">
+                  <Truck className="h-3.5 w-3.5 text-[var(--color-pantone-orange)]" />
                   En Proveedor Externo
                 </span>
                 {etapaActual.enviado_proveedor_en && (
-                  <span className="text-[10px] font-mono opacity-80">
+                  <span className="text-[11px] font-mono opacity-80">
                     {format(new Date(etapaActual.enviado_proveedor_en), "dd/MM")}
                   </span>
                 )}
@@ -278,24 +292,27 @@ export function OtCard({
 
           {/* Motivo de espera: APROBACIÓN DE CLIENTE */}
           {etapaActual.estado === "esperando_cliente" && (
-            <div className="mt-2 p-2 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-600 dark:text-violet-300 text-xs">
-              <div className="flex items-center gap-1.5 font-semibold text-[11px]">
-                <Clock className="h-3.5 w-3.5 animate-spin" />
-                Esperando aprobación de cliente
+            <div className="mt-2 p-2.5 rounded-xl bg-[var(--ink-cyan-subtle)] border border-[var(--ink-cyan)]/30 text-[var(--ink-cyan-foreground)] text-xs space-y-1">
+              <div className="flex items-center justify-between font-semibold text-[11px]">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5 text-[var(--ink-cyan)]" />
+                  Esperando aprobación digital
+                </span>
+                <span className="inline-block w-2 h-2 rounded-full bg-[var(--ink-cyan)] ring-2 ring-[var(--ink-cyan)]/25" />
               </div>
-              <p className="text-[10px] opacity-80 mt-0.5">
-                Enlace digital 3D pendiente de respuesta.
+              <p className="text-[11px] opacity-80">
+                Enlace 3D enviado al cliente vía WhatsApp.
               </p>
             </div>
           )}
 
           {/* Motivo de espera: PAUSADA */}
           {etapaActual.estado === "pausada" && etapaActual.nota_pausa && (
-            <div className="mt-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs">
-              <p className="text-[10px] font-semibold uppercase tracking-wider opacity-80">
+            <div className="mt-2 p-2.5 rounded-xl bg-[var(--ink-yellow-subtle)] border border-dashed border-[var(--ink-yellow)]/40 text-[var(--ink-yellow-foreground)] text-xs space-y-0.5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider opacity-85">
                 Pausa operativa
               </p>
-              <p className="text-[11px] truncate mt-0.5">{etapaActual.nota_pausa}</p>
+              <p className="text-[11px] truncate font-medium">{etapaActual.nota_pausa}</p>
             </div>
           )}
         </>
@@ -412,7 +429,7 @@ export function OtCard({
                         size="sm"
                         disabled={isActionPending}
                         onClick={() => onEnviarProveedor(etapaActual.id)}
-                        className="h-9 px-2.5 font-medium text-xs rounded-lg border-indigo-500/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/10"
+                        className="h-9 px-2.5 font-medium text-xs rounded-lg border-[var(--color-pantone-orange)]/40 text-[var(--color-pantone-orange-foreground)] hover:bg-[var(--color-pantone-orange-subtle)]"
                       >
                         <Truck className="h-3 w-3 mr-1" />
                         <span>Proveedor</span>
@@ -481,7 +498,7 @@ export function OtCard({
                   size="sm"
                   disabled={isActionPending}
                   onClick={() => onTerminar(etapaActual.id)}
-                  className="h-9 px-2 text-[10px] text-sky-600 border-sky-400/40 hover:bg-sky-500/10 shrink-0 font-bold"
+                  className="h-9 px-2 text-[11px] text-[var(--ink-cyan)] border-[var(--ink-cyan)]/40 hover:bg-[var(--ink-cyan-subtle)] shrink-0 font-bold"
                   title="Forzar avance de secado (Supervisor/Admin)"
                 >
                   <span>Forzar Secado</span>
@@ -497,7 +514,7 @@ export function OtCard({
               size="sm"
               disabled={isActionPending}
               onClick={() => onRecibirProveedor(etapaActual.id)}
-              className="w-full h-9 font-medium text-xs rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
+              className="w-full h-9 font-medium text-xs rounded-lg bg-[var(--color-pantone-orange)] hover:opacity-90 text-[var(--color-pantone-orange-foreground)] shadow-xs"
             >
               <Truck className="h-3 w-3 mr-1" />
               <span>Recibir de Proveedor</span>
@@ -511,7 +528,7 @@ export function OtCard({
                 <Check className="h-3 w-3" />
                 Etapa completada
               </span>
-              <span className="tabular-nums font-mono text-[10px]">
+              <span className="tabular-nums font-mono text-[11px]">
                 {etapaActual.minutos_trabajados} min
               </span>
             </div>

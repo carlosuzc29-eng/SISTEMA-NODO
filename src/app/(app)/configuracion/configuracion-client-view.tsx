@@ -311,7 +311,7 @@ export function ConfiguracionClientView({
               key={t.id}
               type="button"
               onClick={() => setTabActiva(t.id as typeof tabActiva)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs transition-all ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs transition-[background-color,color,box-shadow] duration-150 ease-[var(--ease-out)] ${
                 isActive
                   ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                   : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -320,7 +320,7 @@ export function ConfiguracionClientView({
               <Icon className="h-4 w-4" />
               <span>{t.label}</span>
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${
                   isActive ? "bg-black/20 text-white" : "bg-muted-foreground/20 text-muted-foreground"
                 }`}
               >
@@ -383,7 +383,7 @@ export function ConfiguracionClientView({
                             <h4 className="font-bold text-sm text-foreground">
                               {area.nombre}
                             </h4>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${faseBadgeClass}`}>
+                            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${faseBadgeClass}`}>
                               {faseLabel}
                             </span>
                           </div>
@@ -393,7 +393,7 @@ export function ConfiguracionClientView({
                         </div>
                       </div>
 
-                      <Badge variant="success" className="text-[10px] shrink-0">
+                      <Badge variant="success" className="text-[11px] shrink-0">
                         Orden #{area.orden}
                       </Badge>
                     </div>
@@ -502,7 +502,7 @@ export function ConfiguracionClientView({
                           <span className="text-xs font-mono text-muted-foreground">
                             @{u.usuario}
                           </span>
-                          <Badge variant="outline" className="uppercase font-bold text-[10px]">
+                          <Badge variant="outline" className="uppercase font-bold text-[11px]">
                             {u.rol}
                           </Badge>
                         </div>
@@ -659,7 +659,7 @@ export function ConfiguracionClientView({
                           <span className="font-bold text-sm text-foreground">
                             {p.nombre}
                           </span>
-                          <Badge variant="secondary" className="text-[10px] uppercase font-bold">
+                          <Badge variant="secondary" className="text-[11px] uppercase font-bold">
                             {tipoBadge}
                           </Badge>
                         </div>
