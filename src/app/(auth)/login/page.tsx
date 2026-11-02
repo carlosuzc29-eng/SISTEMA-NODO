@@ -1,42 +1,59 @@
-import { LoginForm } from "@/components/auth/login-form";
+"use client";
 
-export const metadata = {
-  title: "Iniciar Sesión — Control de Producción",
-};
+import React, { useRef } from "react";
+import dynamic from "next/dynamic";
+import { manrope, ibmPlexMono } from "./fonts";
+import { LoginHero } from "@/components/auth/LoginHero";
+import { LoginCard } from "@/components/auth/LoginCard";
+import { LoginCornerClock } from "@/components/auth/LoginCornerClock";
+import type { LoginSceneHandle } from "@/components/auth/LoginScene";
+import styles from "./login.module.css";
+
+const LoginScene = dynamic(() => import("@/components/auth/LoginScene"), {
+  ssr: false,
+});
 
 export default function LoginPage() {
+  const sceneRef = useRef<LoginSceneHandle | null>(null);
+
+  const handlePulse = (hex: number) => {
+    sceneRef.current?.pulse(hex);
+  };
+
   return (
-    <main className="relative min-h-screen w-full flex flex-col justify-center items-center p-4 sm:p-8 bg-background overflow-hidden">
-      {/* Trama de semitono (Halftone) de imprenta auténtica */}
-      <div className="absolute inset-0 halftone-pattern opacity-60 pointer-events-none" />
+    <div className={`${styles.loginRoot} ${manrope.variable} ${ibmPlexMono.variable}`}>
+      {/* Escena 3D con Three.js cargada dinámicamente en cliente */}
+      <LoginScene ref={sceneRef} className={styles.scene} />
 
-      {/* Marcas de registro en esquinas */}
-      <div className="absolute top-6 left-6 text-muted-foreground/40 font-mono text-[11px] select-none pointer-events-none hidden sm:block">
-        ┌ NODO 26 // REGISTRO 0.1mm CMYK
-      </div>
-      <div className="absolute top-6 right-6 text-muted-foreground/40 font-mono text-[11px] select-none pointer-events-none hidden sm:block">
-        PRENSA: ISO-12647-2 ┐
-      </div>
+      {/* Capas de textura: retícula de semitono y grano de papel */}
+      <div className={styles.dots} />
+      <div className={styles.grain} />
 
-      <div className="relative z-10 w-full max-w-md my-auto">
-        <LoginForm />
+      {/* Marcas técnicas de registro en las esquinas */}
+      <div className={`${styles.corner} ${styles.cornerTl}`}>
+        <span className={styles.reg} />
+        Nodo 26 // Registro 0.1 mm
       </div>
+      <div className={`${styles.corner} ${styles.cornerTr}`}>
+        <span className={styles.live} />
+        Prensa · ISO 12647-2
+      </div>
+      <div className={`${styles.corner} ${styles.cornerBl}`}>
+        <span className={styles.cmyk}>
+          <i style={{ background: "var(--c)" }} />
+          <i style={{ background: "var(--m)" }} />
+          <i style={{ background: "var(--y)" }} />
+          <i style={{ background: "var(--k)" }} />
+        </span>
+        CMYK calibrado
+      </div>
+      <LoginCornerClock />
 
-      <footer className="relative z-10 mt-8 flex flex-col items-center gap-2.5 text-center text-xs text-muted-foreground">
-        {/* Barra de calibración CMYK de proceso */}
-        <div className="flex items-center gap-1.5 opacity-80">
-          <div className="h-2 w-3 rounded-xs bg-[var(--ink-cyan)]" title="Cyan" />
-          <div className="h-2 w-3 rounded-xs bg-[var(--ink-magenta)]" title="Magenta" />
-          <div className="h-2 w-3 rounded-xs bg-[var(--ink-yellow)]" title="Yellow" />
-          <div className="h-2 w-3 rounded-xs bg-[var(--ink-key)]" title="Key" />
-          <span className="text-[11px] font-mono tracking-widest text-muted-foreground ml-1">
-            CMYK CALIBRATED
-          </span>
-        </div>
-        <p className="font-mono text-[11px] text-muted-foreground">
-          NODO 26 • Control de Piso de Imprenta & Empaques
-        </p>
-      </footer>
-    </main>
+      {/* Layout principal */}
+      <main className={styles.wrap}>
+        <LoginHero />
+        <LoginCard onPulse={handlePulse} />
+      </main>
+    </div>
   );
 }

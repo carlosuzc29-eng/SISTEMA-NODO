@@ -14,6 +14,7 @@ export type LoginResult = {
   redirectUrl?: string;
   bloqueado?: boolean;
   minutosRestantes?: number;
+  nombreCompleto?: string;
 };
 
 const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
@@ -179,6 +180,13 @@ const SEED_PROFILES: Record<string, ProfileRow & { areas?: AreaRow | null }> = {
   },
 };
 
+// Alias directos de nombres de estación para login ágil
+SEED_PROFILES.diseno = SEED_PROFILES.op_diseno;
+SEED_PROFILES.impresion = SEED_PROFILES.op_impresion;
+SEED_PROFILES.troquelado = SEED_PROFILES.op_troquelado;
+SEED_PROFILES.corte = SEED_PROFILES.op_corte;
+SEED_PROFILES.logistica = SEED_PROFILES.op_logistica;
+
 export async function loginConPin(input: LoginInput): Promise<LoginResult> {
   const parseResult = loginSchema.safeParse(input);
   if (!parseResult.success) {
@@ -302,6 +310,7 @@ export async function loginConPin(input: LoginInput): Promise<LoginResult> {
   return {
     ok: true,
     redirectUrl: targetUrl,
+    nombreCompleto: targetProfile.nombre_completo,
   };
 }
 
