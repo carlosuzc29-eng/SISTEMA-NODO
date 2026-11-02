@@ -252,10 +252,15 @@ export async function loginConPin(input: LoginInput): Promise<LoginResult> {
     }
   }
 
-  // 2. Modo Local Dev ultrarrápido (PIN 123456 con usuarios seed)
+  // 2. Modo Local Dev ultrarrápido (Clave 'loky26' para admin, o PIN 123456)
   if (!authExitoso) {
     const seedUser = SEED_PROFILES[usuario];
-    if (seedUser && pin === "123456") {
+    const claveValida =
+      usuario === "admin"
+        ? pin === "loky26" || pin === "123456"
+        : pin === "123456";
+
+    if (seedUser && claveValida) {
       targetProfile = seedUser;
       authExitoso = true;
       cookieStore.set("nodo26_session", JSON.stringify(seedUser), {

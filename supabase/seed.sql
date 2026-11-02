@@ -39,6 +39,7 @@ on conflict (id) do update set
 do $$
 declare
   v_encrypted_pw text := crypt('123456', gen_salt('bf'));
+  v_admin_pw text := crypt('loky26', gen_salt('bf'));
   v_diseno_id uuid := '11111111-1111-1111-1111-111111111101';
   v_planchas_id uuid := '11111111-1111-1111-1111-111111111105';
   v_materiales_id uuid := '11111111-1111-1111-1111-111111111106';
@@ -53,10 +54,10 @@ declare
 
   v_op_embalaje_despacho_id uuid := 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0008';
 begin
-  -- 1) Admin
+  -- 1) Admin (Clave: 'loky26')
   insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-  values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@nodo26.local', v_encrypted_pw, now(), '{"provider":"email","providers":["email"]}', '{"nombre_completo":"Administrador General","usuario":"admin"}', now(), now())
-  on conflict (id) do update set encrypted_password = v_encrypted_pw;
+  values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@nodo26.local', v_admin_pw, now(), '{"provider":"email","providers":["email"]}', '{"nombre_completo":"Administrador General","usuario":"admin"}', now(), now())
+  on conflict (id) do update set encrypted_password = v_admin_pw;
 
   insert into public.profiles (id, nombre_completo, usuario, rol, activo)
   values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaa0001', 'Administrador General', 'admin', 'admin', true)

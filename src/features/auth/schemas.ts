@@ -8,7 +8,8 @@ export const loginSchema = z.object({
     .transform((val) => val.trim().toLowerCase()),
   pin: z
     .string()
-    .regex(/^\d{6}$/, "El PIN debe tener exactamente 6 números"),
+    .min(4, "La clave debe tener al menos 4 caracteres")
+    .max(30, "La clave no debe exceder 30 caracteres"),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

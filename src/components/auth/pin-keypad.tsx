@@ -45,7 +45,12 @@ export function PinKeypad({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (disabled) return;
-      if (/^[0-9]$/.test(e.key)) {
+      // Si el foco está en un input o textarea, dejar que el input maneje el evento
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+        return;
+      }
+      if (/^[a-zA-Z0-9]$/.test(e.key)) {
         if (value.length < maxLength) {
           onChange(value + e.key);
         }

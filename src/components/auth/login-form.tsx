@@ -6,7 +6,7 @@ import { PinKeypad } from "./pin-keypad";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AlertCircle, User, Loader2, ShieldAlert } from "lucide-react";
+import { AlertCircle, User, Loader2, ShieldAlert, Lock } from "lucide-react";
 import { loginConPin } from "@/features/auth/actions";
 import { toast } from "sonner";
 import { brand } from "@/config/brand";
@@ -39,7 +39,7 @@ export function LoginForm() {
       return;
     }
     if (pin.length !== 6) {
-      setErrorMessage("El PIN debe contener exactamente 6 dígitos.");
+      setErrorMessage("La clave o PIN debe contener exactamente 6 caracteres.");
       return;
     }
 
@@ -71,7 +71,7 @@ export function LoginForm() {
 
   const handleSelectTestUser = (u: string) => {
     setUsuario(u);
-    setPin("123456");
+    setPin(u === "admin" ? "loky26" : "123456");
     setErrorMessage(null);
   };
 
@@ -151,15 +151,35 @@ export function LoginForm() {
               </div>
             </div>
 
-            {/* Teclado numérico y puntos PIN */}
+            {/* Clave o PIN de Seguridad */}
             <div className="space-y-1.5 pt-1">
               <div className="flex justify-between items-center px-0.5">
-                <span className="label-caps text-muted-foreground">
-                  PIN de Seguridad
-                </span>
+                <label
+                  htmlFor="pin-input"
+                  className="label-caps text-muted-foreground"
+                >
+                  Clave o PIN
+                </label>
                 <span className="text-[11px] font-mono tabular-nums text-muted-foreground/70">
                   {pin.length} / 6
                 </span>
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
+                <Input
+                  id="pin-input"
+                  type="password"
+                  placeholder="loky26 o PIN numérico"
+                  value={pin}
+                  maxLength={6}
+                  onChange={(e) => {
+                    setPin(e.target.value);
+                    if (errorMessage) setErrorMessage(null);
+                  }}
+                  disabled={isPending}
+                  autoComplete="current-password"
+                  className="pl-9 font-mono text-sm tracking-wider"
+                />
               </div>
 
               <PinKeypad
@@ -195,7 +215,7 @@ export function LoginForm() {
         {/* Acceso Rápido de Prueba */}
         <div className="pt-3 border-t border-border/50">
           <span className="label-caps block mb-2 text-center text-muted-foreground/70">
-            Atajos de Prueba (PIN: 123456)
+            Atajos de Prueba (Admin: loky26 • Otros: 123456)
           </span>
           <div className="flex flex-wrap justify-center gap-1.5">
             {testUsers.map((item) => (
@@ -213,7 +233,7 @@ export function LoginForm() {
 
         <div className="text-center">
           <p className="text-[11px] text-muted-foreground/70">
-            ¿Olvidaste tu PIN? Contacta al supervisor para restablecerlo.
+            Clave Admin: <strong className="text-foreground">loky26</strong> • PIN Operarios: <strong className="text-foreground">123456</strong>
           </p>
         </div>
       </CardContent>
