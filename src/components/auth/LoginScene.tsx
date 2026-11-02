@@ -258,11 +258,11 @@ export const LoginScene = forwardRef<LoginSceneHandle, { className?: string }>(
         core.userData.col = new THREE.Color(hex);
       };
 
-      const clock = new THREE.Clock();
+      const startTime = performance.now();
       let animId: number;
 
       const loop = () => {
-        const t = clock.getElapsedTime();
+        const t = (performance.now() - startTime) * 0.001;
         const k = reduce ? 0.15 : 1;
         mx += (tx - mx) * 0.04;
         my += (ty - my) * 0.04;
