@@ -67,3 +67,4 @@ export function PinPad({ onPress, disabled = false, className }: PinPadProps) {
 }
 
 export default PinPad;
+
