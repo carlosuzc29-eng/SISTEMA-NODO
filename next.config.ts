@@ -6,14 +6,6 @@ const nextConfig: NextConfig = {
     // @ts-ignore
     agentUpgrade: "security",
   },
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
-  },
 };
 
 export default nextConfig;
